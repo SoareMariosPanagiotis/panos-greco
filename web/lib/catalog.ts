@@ -50,5 +50,8 @@ export function formatSize(size: number, unit: string) {
 }
 
 export function formatPrice(price: string) {
-    return `${Number(price).toLocaleString("ro-RO", { minimumFractionDigits: 2 })} lei`;
+    return `${Number(price).toLocaleString("ro-RO", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })} lei`;
 }

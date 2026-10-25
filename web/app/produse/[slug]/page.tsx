@@ -56,7 +56,11 @@ async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
                     <p className="mt-4 text-neutral-700">{product.description}</p>
                 )}
 
-                <VariantPicker variants={product.productVariantsByProductId.nodes} />
+                <VariantPicker
+                    productName={product.name}
+                    productSlug={slug}
+                    variants={product.productVariantsByProductId.nodes}
+                />
             </div>
         </div>
     );

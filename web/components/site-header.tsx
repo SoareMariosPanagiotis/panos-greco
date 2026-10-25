@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CartLink } from "@/components/cart-link";
 
 const links = [
     { href: "/", label: "Produse" },
@@ -10,10 +11,10 @@ export function SiteHeader() {
     return (
         <header className="bg-olive text-white">
             <div className="mx-auto flex max-w-6xl items-center justify-between px-8 py-4">
-                <Link href="/web/public" className="text-2xl font-bold tracking-tight">
+                <Link href="/" className="text-2xl font-bold tracking-tight">
                     Panos Greco
                 </Link>
-                <nav className="flex gap-6 text-sm font-medium">
+                <nav className="flex items-center gap-6 text-sm font-medium">
                     {links.map((link) => (
                         <Link
                             key={link.href}
@@ -23,6 +24,7 @@ export function SiteHeader() {
                             {link.label}
                         </Link>
                     ))}
+                    <CartLink />
                 </nav>
             </div>
         </header>

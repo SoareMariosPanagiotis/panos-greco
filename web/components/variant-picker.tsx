@@ -1,18 +1,43 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/components/cart-provider";
 import { formatPrice, formatSize, type Variant } from "@/lib/catalog";
 
-export function VariantPicker({ variants }: { variants: Variant[] }) {
-    // Starea: ce mărime e aleasă și ce cantitate
+type Props = {
+    productName: string;
+    productSlug: string;
+    variants: Variant[];
+};
+
+export function VariantPicker({ productName, productSlug, variants }: Props) {
+    const { addItem } = useCart();
     const [selectedId, setSelectedId] = useState(variants[0]?.id);
     const [quantity, setQuantity] = useState(1);
+    const [added, setAdded] = useState(false);
 
     const selected = variants.find((variant) => variant.id === selectedId) ?? variants[0];
     if (!selected) return null;
 
     const total = Number(selected.price) * quantity;
+
+    function handleAdd() {
+        addItem(
+            {
+                variantId: selected.id,
+                productName,
+                productSlug,
+                sizeLabel: formatSize(selected.packSize, selected.packUnit),
+                price: selected.price,
+            },
+            quantity,
+        );
+        setQuantity(1);
+        setAdded(true);
+        setTimeout(() => setAdded(false), 3000);
+    }
 
     return (
         <div className="mt-8">
@@ -63,9 +88,23 @@ export function VariantPicker({ variants }: { variants: Variant[] }) {
                 <p className="text-2xl font-bold">{formatPrice(String(total))}</p>
             </div>
 
-            <Button size="lg" className="mt-6 w-full bg-olive py-6 text-base hover:bg-olive/90">
+            <Button
+                size="lg"
+                onClick={handleAdd}
+                className="mt-6 w-full bg-olive py-6 text-base hover:bg-olive/90"
+            >
                 Adaugă în coș
             </Button>
+
+            {added && (
+                <p className="mt-3 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800">
+                    Produsul a fost adăugat în coș.{" "}
+                    <Link href="/cos" className="font-medium underline">
+                        Vezi coșul
+                    </Link>
+                </p>
+            )}
+
             <p className="mt-3 text-xs text-neutral-500">Prețurile includ TVA.</p>
         </div>
     );
