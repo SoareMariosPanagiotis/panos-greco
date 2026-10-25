@@ -1,14 +1,20 @@
 const API_URL = "http://localhost:5000/graphql";
 
 // Trimite o interogare GraphQL la API și întoarce datele.
-// O scriem o singură dată și o folosim din toate paginile.
+// Dacă primește un bilet (token), îl pune în header-ul Authorization.
 export async function gql<T>(
     query: string,
     variables: Record<string, unknown> = {},
+    token?: string,
 ): Promise<T> {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
     const res = await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ query, variables }),
     });
     const json = await res.json();
