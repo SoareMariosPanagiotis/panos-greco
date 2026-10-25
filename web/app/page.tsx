@@ -1,34 +1,33 @@
 import { Suspense } from "react";
-import { ProductCard, type Product } from "@/components/product-card";
+import { ProductTile } from "@/components/product-tile";
+import { gql, type ProductTileData } from "@/lib/catalog";
 
 const query = `
   {
-    allProducts {
+    allProducts(orderBy: NAME_ASC, condition: { isActive: true }) {
       nodes {
         id
         name
+        slug
         isOrganic
-        productVariantsByProductId(orderBy: PACK_SIZE_ASC) {
-          nodes { id packSize packUnit price }
+        imageUrl
+        cheapest: productVariantsByProductId(orderBy: PRICE_ASC, first: 1) {
+          totalCount
+          nodes { price }
         }
       }
     }
   }
 `;
 
-async function ProductList() {
-    const res = await fetch("http://localhost:5000/graphql", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query }),
-    });
-    const { data } = await res.json();
-    const products: Product[] = data.allProducts.nodes;
+async function ProductGrid() {
+    const data = await gql<{ allProducts: { nodes: ProductTileData[] } }>(query);
+    const products = data.allProducts.nodes;
 
     return (
-        <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductTile key={product.id} product={product} />
             ))}
         </div>
     );
@@ -36,10 +35,13 @@ async function ProductList() {
 
 export default function Home() {
     return (
-        <main className="p-8">
-            <h1 className="text-3xl font-bold">Panos Greco</h1>
-            <Suspense fallback={<p className="mt-6">Se încarcă produsele...</p>}>
-                <ProductList />
+        <main className="mx-auto w-full max-w-6xl px-8 py-10">
+            <h1 className="text-3xl font-bold text-olive">Produsele noastre</h1>
+            <p className="mt-2 text-neutral-600">
+                Ulei de măsline extravirgin bio, din livada proprie din Messinia.
+            </p>
+            <Suspense fallback={<p className="mt-8">Se încarcă produsele...</p>}>
+                <ProductGrid />
             </Suspense>
         </main>
     );
