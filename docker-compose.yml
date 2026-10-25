@@ -26,6 +26,10 @@ services:
       - postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - --default-role
       - panos_anonymous
+      - --jwt-secret
+      - ${JWT_SECRET}
+      - --jwt-token-identifier
+      - auth.jwt_token
       - --schema
       - auth,catalog
       - --watch
