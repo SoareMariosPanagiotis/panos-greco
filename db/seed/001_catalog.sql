@@ -2,17 +2,17 @@
 delete from catalog.products;
 delete from catalog.categories;
 
-insert into catalog.categories (name, sort_order) values
-                                                      ('Ulei de măsline', 1),
-                                                      ('Măsline și pastă de măsline', 2),
-                                                      ('Oțet balsamic și sosuri', 3),
-                                                      ('Condimente și plante aromatice', 4),
-                                                      ('Ceaiuri', 5),
-                                                      ('Dulcețuri și marmelade', 6),
-                                                      ('Siropuri și sucuri concentrate', 7),
-                                                      ('Miere', 8),
-                                                      ('Fructe uscate', 9),
-                                                      ('Cafea', 10);
+insert into catalog.categories (name, slug, sort_order) values
+                                                            ('Ulei de măsline', 'ulei-de-masline', 1),
+                                                            ('Măsline și pastă de măsline', 'masline', 2),
+                                                            ('Oțet balsamic și sosuri', 'otet-balsamic-si-sosuri', 3),
+                                                            ('Condimente și plante aromatice', 'condimente', 4),
+                                                            ('Ceaiuri', 'ceaiuri', 5),
+                                                            ('Dulcețuri și marmelade', 'dulceturi-si-marmelade', 6),
+                                                            ('Siropuri și sucuri concentrate', 'siropuri', 7),
+                                                            ('Miere', 'miere', 8),
+                                                            ('Fructe uscate', 'fructe-uscate', 9),
+                                                            ('Cafea', 'cafea', 10);
 
 -- Un rând = un articol din MicroERP. Rândurile cu același slug devin
 -- un singur produs cu mai multe variante (mărimi).
