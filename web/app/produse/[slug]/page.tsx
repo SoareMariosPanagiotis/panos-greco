@@ -3,7 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { formatPrice, formatSize, gql, type ProductDetails } from "@/lib/catalog";
+import { VariantPicker } from "@/components/variant-picker";
+import { gql, type ProductDetails } from "@/lib/catalog";
 
 const query = `
   query ProductPage($slug: String!) {
@@ -26,8 +27,6 @@ async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
     const product = data.productBySlug;
 
     if (!product) notFound();
-
-    const variants = product.productVariantsByProductId.nodes;
 
     return (
         <div className="mt-6 grid gap-10 md:grid-cols-2">
@@ -57,18 +56,7 @@ async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
                     <p className="mt-4 text-neutral-700">{product.description}</p>
                 )}
 
-                <h2 className="mt-8 font-semibold">
-                    {variants.length > 1 ? "Mărimi disponibile" : "Ambalaj"}
-                </h2>
-                <ul className="mt-3 divide-y rounded-xl border bg-white">
-                    {variants.map((variant) => (
-                        <li key={variant.id} className="flex justify-between px-4 py-3">
-                            <span>{formatSize(variant.packSize, variant.packUnit)}</span>
-                            <span className="font-semibold">{formatPrice(variant.price)}</span>
-                        </li>
-                    ))}
-                </ul>
-                <p className="mt-3 text-xs text-neutral-500">Prețurile includ TVA.</p>
+                <VariantPicker variants={product.productVariantsByProductId.nodes} />
             </div>
         </div>
     );
