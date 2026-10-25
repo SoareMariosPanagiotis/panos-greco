@@ -21,7 +21,11 @@ services:
       - "5000:5000"
     command:
       - --connection
+      - postgres://panos_api:${POSTGRES_API_PASSWORD}@db:5432/${POSTGRES_DB}
+      - --owner-connection
       - postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - --default-role
+      - panos_anonymous
       - --schema
       - auth,catalog
       - --watch
