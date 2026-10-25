@@ -1,18 +1,5 @@
 import { Suspense } from "react";
-
-type Variant = {
-    id: string;
-    packSize: number;
-    packUnit: string;
-    price: string;
-};
-
-type Product = {
-    id: string;
-    name: string;
-    isOrganic: boolean;
-    productVariantsByProductId: { nodes: Variant[] };
-};
+import { ProductCard, type Product } from "@/components/product-card";
 
 const query = `
   {
@@ -29,12 +16,6 @@ const query = `
   }
 `;
 
-function formatSize(size: number, unit: string) {
-    if (size >= 1000 && unit === "ml") return `${size / 1000} l`;
-    if (size >= 1000 && unit === "g") return `${size / 1000} kg`;
-    return `${size} ${unit}`;
-}
-
 async function ProductList() {
     const res = await fetch("http://localhost:5000/graphql", {
         method: "POST",
@@ -47,24 +28,7 @@ async function ProductList() {
     return (
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {products.map((product) => (
-                <div key={product.id} className="rounded-xl border border-neutral-700 p-6">
-                    <div className="flex items-start justify-between gap-4">
-                        <h2 className="text-xl font-semibold">{product.name}</h2>
-                        {product.isOrganic && (
-                            <span className="rounded-full bg-green-700 px-3 py-1 text-xs font-semibold">
-                BIO
-              </span>
-                        )}
-                    </div>
-                    <ul className="mt-4 divide-y divide-neutral-800">
-                        {product.productVariantsByProductId.nodes.map((variant) => (
-                            <li key={variant.id} className="flex justify-between py-2">
-                                <span>{formatSize(variant.packSize, variant.packUnit)}</span>
-                                <span className="font-medium">{variant.price} lei</span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+                <ProductCard key={product.id} product={product} />
             ))}
         </div>
     );
