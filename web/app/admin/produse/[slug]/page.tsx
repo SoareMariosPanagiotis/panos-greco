@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { DeleteProductForm } from "@/components/admin/delete-product-form";
+import { NewVariantForm } from "@/components/admin/new-variant-form";
 import { ProductDetailsForm } from "@/components/admin/product-details-form";
 import { VariantEditRow, type AdminVariant } from "@/components/admin/variant-edit-row";
 import { gql } from "@/lib/catalog";
@@ -55,6 +57,8 @@ async function ProductEditor({ params }: { params: Promise<{ slug: string }> }) 
 
     if (!product) notFound();
 
+    const variants = product.productVariantsByProductId.nodes;
+
     return (
         <>
             <p className="mt-6 text-sm text-neutral-500">{product.categoryByCategoryId?.name}</p>
@@ -91,15 +95,26 @@ async function ProductEditor({ params }: { params: Promise<{ slug: string }> }) 
 
             <h2 className="mt-10 font-semibold">Mărimi, prețuri și stoc</h2>
             <div className="mt-3 rounded-xl border bg-white">
-                <div className="hidden gap-4 border-b px-4 py-3 text-sm text-neutral-500 md:grid md:grid-cols-[1fr_140px_120px_180px]">
+                <div className="hidden gap-4 border-b px-4 py-3 text-sm text-neutral-500 md:grid md:grid-cols-[1fr_140px_120px_110px_90px]">
                     <span>Mărime</span>
                     <span>Preț (lei, cu TVA)</span>
                     <span>Stoc (buc.)</span>
                     <span />
+                    <span />
                 </div>
-                {product.productVariantsByProductId.nodes.map((variant) => (
-                    <VariantEditRow key={variant.id} variant={variant} />
+                {variants.map((variant) => (
+                    <VariantEditRow
+                        key={variant.id}
+                        variant={variant}
+                        productId={product.id}
+                        canDelete={variants.length > 1}
+                    />
                 ))}
+            </div>
+            <NewVariantForm productId={product.id} />
+
+            <div className="mt-16">
+                <DeleteProductForm productId={product.id} productName={product.name} />
             </div>
         </>
     );

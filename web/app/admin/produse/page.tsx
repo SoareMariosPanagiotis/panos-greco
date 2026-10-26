@@ -93,7 +93,15 @@ export default function AdminProductsPage() {
             <Link href="/admin" className="text-sm text-olive hover:underline">
                 ← Administrare
             </Link>
-            <h1 className="mt-2 text-3xl font-bold text-olive">Produse</h1>
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
+                <h1 className="text-3xl font-bold text-olive">Produse</h1>
+                <Link
+                    href="/admin/produse/nou"
+                    className="rounded-lg bg-olive px-4 py-2 text-sm font-medium text-white hover:bg-olive/90"
+                >
+                    + Produs nou
+                </Link>
+            </div>
             <Suspense fallback={<p className="mt-6">Se încarcă produsele...</p>}>
                 <ProductTable />
             </Suspense>
