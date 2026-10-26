@@ -4,6 +4,11 @@ import { logout } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth";
 
+const sections = [
+    { href: "/admin/produse", title: "Produse", text: "Detalii, prețuri și stoc." },
+    { href: "/admin/categorii", title: "Categorii", text: "Adaugă, redenumește, ordonează." },
+];
+
 async function AdminDashboard() {
     const { user } = await requireAdmin();
 
@@ -23,14 +28,17 @@ async function AdminDashboard() {
                 </form>
             </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <Link
-                    href="/admin/produse"
-                    className="rounded-xl border bg-white p-6 transition hover:border-olive hover:shadow-md"
-                >
-                    <h2 className="text-lg font-semibold text-olive">Produse</h2>
-                    <p className="mt-1 text-sm text-neutral-600">Prețuri și stoc pentru fiecare mărime.</p>
-                </Link>
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+                {sections.map((section) => (
+                    <Link
+                        key={section.href}
+                        href={section.href}
+                        className="rounded-xl border bg-white p-6 transition hover:border-olive hover:shadow-md"
+                    >
+                        <h2 className="text-lg font-semibold text-olive">{section.title}</h2>
+                        <p className="mt-1 text-sm text-neutral-600">{section.text}</p>
+                    </Link>
+                ))}
                 <div className="rounded-xl border border-dashed bg-white/50 p-6">
                     <h2 className="text-lg font-semibold text-neutral-400">Comenzi</h2>
                     <p className="mt-1 text-sm text-neutral-400">În curând.</p>
