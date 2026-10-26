@@ -29,40 +29,50 @@ async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
     if (!product) notFound();
 
     return (
-        <div className="mt-6 grid gap-10 md:grid-cols-2">
-            <div className="relative aspect-square overflow-hidden rounded-xl border bg-white">
-                {product.imageUrl ? (
-                    <Image
-                        src={product.imageUrl}
-                        alt={product.name}
-                        fill
-                        sizes="(min-width: 768px) 50vw, 100vw"
-                        className="object-cover"
+        <>
+            {/* Sus: tot ce trebuie ca să cumperi, fără scroll */}
+            <div className="mt-6 grid gap-10 md:grid-cols-2">
+                <div className="relative aspect-square overflow-hidden rounded-xl border bg-white">
+                    {product.imageUrl ? (
+                        <Image
+                            src={product.imageUrl}
+                            alt={product.name}
+                            fill
+                            sizes="(min-width: 768px) 50vw, 100vw"
+                            className="object-cover"
+                        />
+                    ) : (
+                        <div className="flex h-full items-center justify-center bg-olive-light text-8xl font-bold text-olive/30">
+                            {product.name[0]}
+                        </div>
+                    )}
+                </div>
+
+                <div>
+                    <p className="text-sm text-neutral-500">{product.categoryByCategoryId?.name}</p>
+                    <h1 className="mt-1 text-3xl font-bold">{product.name}</h1>
+                    {product.isOrganic && (
+                        <Badge className="mt-3 bg-green-700 text-white">BIO</Badge>
+                    )}
+
+                    <VariantPicker
+                        productName={product.name}
+                        productSlug={slug}
+                        variants={product.productVariantsByProductId.nodes}
                     />
-                ) : (
-                    <div className="flex h-full items-center justify-center bg-olive-light text-8xl font-bold text-olive/30">
-                        {product.name[0]}
-                    </div>
-                )}
+                </div>
             </div>
 
-            <div>
-                <p className="text-sm text-neutral-500">{product.categoryByCategoryId?.name}</p>
-                <h1 className="mt-1 text-3xl font-bold">{product.name}</h1>
-                {product.isOrganic && (
-                    <Badge className="mt-3 bg-green-700 text-white">BIO</Badge>
-                )}
-                {product.description && (
-                    <p className="mt-4 text-neutral-700">{product.description}</p>
-                )}
-
-                <VariantPicker
-                    productName={product.name}
-                    productSlug={slug}
-                    variants={product.productVariantsByProductId.nodes}
-                />
-            </div>
-        </div>
+            {/* Jos: povestea și detaliile, pentru cine vrea să citească */}
+            {product.description && (
+                <section className="mt-16 border-t pt-10">
+                    <h2 className="text-2xl font-bold text-olive">Descriere</h2>
+                    <p className="mt-4 max-w-3xl whitespace-pre-line leading-relaxed text-neutral-700">
+                        {product.description}
+                    </p>
+                </section>
+            )}
+        </>
     );
 }
 

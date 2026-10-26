@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { gql } from "@/lib/catalog";
 import { requireAdmin } from "@/lib/auth";
 
+// ---------- Mărimi: preț și stoc ----------
+
 export type VariantFormState = {
     status: "idle" | "saved" | "error";
     message: string;
@@ -46,7 +48,82 @@ export async function updateVariant(
         return { status: "error", message: `Nu am putut salva: ${(error as Error).message}`, price, stock };
     }
 
-    // Reconstruiește paginile, ca prețul nou să apară peste tot pe site
     revalidatePath("/", "layout");
     return { status: "saved", message: "Salvat" };
+}
+
+// ---------- Detaliile produsului ----------
+
+export type ProductFormValues = {
+    name: string;
+    description: string;
+    categoryId: string;
+    vatRate: string;
+    isOrganic: boolean;
+    isActive: boolean;
+};
+
+export type ProductFormState = {
+    status: "idle" | "saved" | "error";
+    message: string;
+    values?: ProductFormValues;
+};
+
+const updateProductMutation = `
+  mutation UpdateProduct($id: UUID!, $patch: ProductPatch!) {
+    updateProductById(input: { id: $id, productPatch: $patch }) {
+      product { id }
+    }
+  }
+`;
+
+export async function updateProduct(
+    _previous: ProductFormState,
+    formData: FormData,
+): Promise<ProductFormState> {
+    const { token } = await requireAdmin();
+
+    const id = String(formData.get("id") ?? "");
+    const values: ProductFormValues = {
+        name: String(formData.get("name") ?? "").trim(),
+        description: String(formData.get("description") ?? "").trim(),
+        categoryId: String(formData.get("categoryId") ?? ""),
+        vatRate: String(formData.get("vatRate") ?? "").trim().replace(",", "."),
+        // O bifă trimite "on" doar când e bifată; nebifată nu trimite nimic
+        isOrganic: formData.get("isOrganic") === "on",
+        isActive: formData.get("isActive") === "on",
+    };
+
+    if (values.name.length < 2) {
+        return { status: "error", message: "Numele trebuie să aibă cel puțin 2 caractere.", values };
+    }
+    if (!values.categoryId) {
+        return { status: "error", message: "Alege o categorie.", values };
+    }
+    if (!/^\d{1,2}(\.\d{1,2})?$/.test(values.vatRate)) {
+        return { status: "error", message: "TVA invalid. Exemplu: 11 sau 21", values };
+    }
+
+    try {
+        await gql(
+            updateProductMutation,
+            {
+                id,
+                patch: {
+                    name: values.name,
+                    description: values.description || null,
+                    categoryId: values.categoryId,
+                    vatRate: values.vatRate,
+                    isOrganic: values.isOrganic,
+                    isActive: values.isActive,
+                },
+            },
+            token,
+        );
+    } catch (error) {
+        return { status: "error", message: `Nu am putut salva: ${(error as Error).message}`, values };
+    }
+
+    revalidatePath("/", "layout");
+    return { status: "saved", message: "Detaliile au fost salvate." };
 }

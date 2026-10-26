@@ -2,32 +2,44 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { ProductDetailsForm } from "@/components/admin/product-details-form";
 import { VariantEditRow, type AdminVariant } from "@/components/admin/variant-edit-row";
 import { gql } from "@/lib/catalog";
 import { requireAdmin } from "@/lib/auth";
 
 type AdminProduct = {
+    id: string;
     name: string;
     slug: string;
+    description: string | null;
     isActive: boolean;
     isOrganic: boolean;
     vatRate: string;
+    categoryId: string;
     categoryByCategoryId: { name: string } | null;
     productVariantsByProductId: { nodes: AdminVariant[] };
 };
 
+type Category = { id: string; name: string };
+
 const query = `
   query AdminProduct($slug: String!) {
     productBySlug(slug: $slug) {
+      id
       name
       slug
+      description
       isActive
       isOrganic
       vatRate
+      categoryId
       categoryByCategoryId { name }
       productVariantsByProductId(orderBy: PACK_SIZE_ASC) {
         nodes { id packSize packUnit price stock barcode }
       }
+    }
+    allCategories(orderBy: SORT_ORDER_ASC) {
+      nodes { id name }
     }
   }
 `;
@@ -35,7 +47,10 @@ const query = `
 async function ProductEditor({ params }: { params: Promise<{ slug: string }> }) {
     const { token } = await requireAdmin();
     const { slug } = await params;
-    const data = await gql<{ productBySlug: AdminProduct | null }>(query, { slug }, token);
+    const data = await gql<{
+        productBySlug: AdminProduct | null;
+        allCategories: { nodes: Category[] };
+    }>(query, { slug }, token);
     const product = data.productBySlug;
 
     if (!product) notFound();
@@ -49,13 +64,32 @@ async function ProductEditor({ params }: { params: Promise<{ slug: string }> }) 
                 {!product.isActive && <Badge variant="outline">Ascuns</Badge>}
             </div>
             <p className="mt-2 text-sm text-neutral-500">
-                TVA {Number(product.vatRate)}% ·{" "}
-                <Link href={`/produse/${product.slug}`} className="text-olive hover:underline">
-                    vezi pe site
-                </Link>
+                {product.isActive ? (
+                    <Link href={`/produse/${product.slug}`} className="text-olive hover:underline">
+                        vezi pe site
+                    </Link>
+                ) : (
+                    "Produsul nu apare pe site."
+                )}
             </p>
 
-            <h2 className="mt-8 font-semibold">Mărimi, prețuri și stoc</h2>
+            <h2 className="mt-8 font-semibold">Detalii</h2>
+            <div className="mt-3">
+                <ProductDetailsForm
+                    productId={product.id}
+                    categories={data.allCategories.nodes}
+                    initial={{
+                        name: product.name,
+                        description: product.description ?? "",
+                        categoryId: product.categoryId,
+                        vatRate: String(Number(product.vatRate)),
+                        isOrganic: product.isOrganic,
+                        isActive: product.isActive,
+                    }}
+                />
+            </div>
+
+            <h2 className="mt-10 font-semibold">Mărimi, prețuri și stoc</h2>
             <div className="mt-3 rounded-xl border bg-white">
                 <div className="hidden gap-4 border-b px-4 py-3 text-sm text-neutral-500 md:grid md:grid-cols-[1fr_140px_120px_180px]">
                     <span>Mărime</span>
