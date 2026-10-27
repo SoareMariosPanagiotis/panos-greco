@@ -31,7 +31,7 @@ services:
       - --jwt-token-identifier
       - auth.jwt_token
       - --schema
-      - auth,catalog
+      - auth,catalog,sales
       - --watch
       - --enhance-graphiql
 
