@@ -4,7 +4,53 @@ import Link from "next/link";
 import { useCart } from "@/components/cart-provider";
 import { formatPrice } from "@/lib/catalog";
 
-export function CartView() {
+type Props = {
+    freeShipping: { over: number; method: string } | null;
+    alwaysFree: string[];
+};
+
+function FreeShippingProgress({
+                                  subtotal,
+                                  over,
+                                  method,
+                              }: {
+    subtotal: number;
+    over: number;
+    method: string;
+}) {
+    const missing = over - subtotal;
+    const percent = Math.min(100, Math.round((subtotal / over) * 100));
+
+    return (
+        <div className="mt-4 rounded-lg bg-olive-light p-3 text-sm text-olive">
+            <p>
+                {missing > 0 ? (
+                    <>
+                        Mai adaugă produse de <strong>{formatPrice(String(missing))}</strong> și „{method}”
+                        devine gratuită.
+                    </>
+                ) : (
+                    <strong>„{method}” este gratuită pentru comanda ta!</strong>
+                )}
+            </p>
+            <div
+                role="progressbar"
+                aria-label="Progres spre livrarea gratuită"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={percent}
+                className="mt-2 h-2 overflow-hidden rounded-full bg-white"
+            >
+                <div
+                    className="h-full rounded-full bg-olive transition-all"
+                    style={{ width: `${percent}%` }}
+                />
+            </div>
+        </div>
+    );
+}
+
+export function CartView({ freeShipping, alwaysFree }: Props) {
     const { items, totalPrice, updateQuantity, removeItem } = useCart();
 
     if (items.length === 0) {
@@ -72,8 +118,20 @@ export function CartView() {
                 </div>
                 <div className="mt-2 flex justify-between text-sm text-neutral-500">
                     <span>Livrare</span>
-                    <span>se calculează la comandă</span>
+                    <span>se alege la comandă</span>
                 </div>
+
+                {freeShipping && (
+                    <FreeShippingProgress
+                        subtotal={totalPrice}
+                        over={freeShipping.over}
+                        method={freeShipping.method}
+                    />
+                )}
+                {alwaysFree.length > 0 && (
+                    <p className="mt-2 text-xs text-neutral-500">Mereu gratuit: {alwaysFree.join(", ")}.</p>
+                )}
+
                 <Link
                     href="/comanda"
                     className="mt-6 block w-full rounded-lg bg-olive px-4 py-3 text-center font-medium text-white hover:bg-olive/90"
