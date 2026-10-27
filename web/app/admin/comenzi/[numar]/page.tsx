@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { OrderActions } from "@/components/admin/order-actions";
 import { OrderStatusBadge } from "@/components/admin/order-status-badge";
 import { requireAdmin } from "@/lib/auth";
 import { formatPrice, gql } from "@/lib/catalog";
@@ -43,12 +44,13 @@ type AdminOrder = {
     paymentFee: string;
     total: string;
     customerNote: string | null;
+    deliveryMethodByDeliveryMethodId: { needsAddress: boolean; needsAwb: boolean } | null;
     orderItemsByOrderId: { nodes: OrderItem[] };
     orderStatusHistoriesByOrderId: { nodes: HistoryEntry[] };
 };
 
-// Comanda + produsele + istoricul, într-o singură cerere.
-// Legăturile vin din cheile străine: order_items.order_id și order_status_history.order_id
+// Comanda + metoda de livrare + produsele + istoricul, într-o singură cerere.
+// Legăturile vin din cheile străine: delivery_method_id, order_items.order_id, order_status_history.order_id
 const query = `
   query AdminOrder($number: Int!) {
     orderByOrderNumber(orderNumber: $number) {
@@ -59,6 +61,7 @@ const query = `
       paymentName paymentStatus
       subtotal discountTotal shippingTotal paymentFee total
       customerNote
+      deliveryMethodByDeliveryMethodId { needsAddress needsAwb }
       orderItemsByOrderId(orderBy: PRODUCT_NAME_ASC) {
         nodes { id productName sizeLabel unitPrice quantity lineTotal }
       }
@@ -95,6 +98,7 @@ async function OrderDetails({ params }: { params: Promise<{ numar: string }> }) 
 
     const items = order.orderItemsByOrderId.nodes;
     const history = order.orderStatusHistoriesByOrderId.nodes;
+    const method = order.deliveryMethodByDeliveryMethodId;
 
     return (
         <>
@@ -164,75 +168,91 @@ async function OrderDetails({ params }: { params: Promise<{ numar: string }> }) 
                     </section>
                 </div>
 
-                <aside className="h-fit space-y-5 rounded-xl border bg-white p-6 text-sm">
-                    <div>
-                        <h2 className="font-semibold">Client</h2>
-                        <p className="mt-1">{order.customerName}</p>
-                        <p>
-                            <a href={`tel:${order.phone}`} className="text-olive hover:underline">
-                                {order.phone}
-                            </a>
-                        </p>
-                        <p>
-                            <a href={`mailto:${order.email}`} className="break-all text-olive hover:underline">
-                                {order.email}
-                            </a>
-                        </p>
-                    </div>
+                <div className="space-y-6">
+                    <section className="rounded-xl border bg-white p-6 text-sm">
+                        <h2 className="font-semibold">Ce urmează</h2>
+                        <div className="mt-3">
+                            <OrderActions
+                                orderId={order.id}
+                                orderNumber={order.orderNumber}
+                                status={order.status}
+                                paymentStatus={order.paymentStatus}
+                                needsAddress={method?.needsAddress ?? true}
+                                needsAwb={method?.needsAwb ?? false}
+                            />
+                        </div>
+                    </section>
 
-                    <div>
-                        <h2 className="font-semibold">Livrare</h2>
-                        <p className="mt-1">{order.deliveryName}</p>
-                        {order.address && (
-                            <p className="mt-1 text-neutral-600">
-                                {order.address}
-                                <br />
-                                {order.city}, jud. {order.county}
-                                {order.postalCode ? `, ${order.postalCode}` : ""}
-                            </p>
-                        )}
-                        {(order.courier || order.awb) && (
-                            <p className="mt-2 text-neutral-600">
-                                {order.courier}
-                                {order.awb && (
-                                    <>
-                                        {" "}
-                                        · AWB <span className="font-mono">{order.awb}</span>
-                                    </>
-                                )}
-                            </p>
-                        )}
-                    </div>
-
-                    <div>
-                        <h2 className="font-semibold">Plată</h2>
-                        <p className="mt-1">{order.paymentName}</p>
-                        <p
-                            className={`capitalize ${
-                                order.paymentStatus === "paid" ? "text-green-700" : "text-neutral-500"
-                            }`}
-                        >
-                            {paymentLabel(order.paymentStatus)}
-                        </p>
-                    </div>
-
-                    {order.companyName && (
+                    <aside className="h-fit space-y-5 rounded-xl border bg-white p-6 text-sm">
                         <div>
-                            <h2 className="font-semibold">Factură pe firmă</h2>
-                            <p className="mt-1 text-neutral-600">
-                                {order.companyName}
-                                <br />
-                                CUI {order.companyCui}
-                                {order.companyRegNo && (
-                                    <>
-                                        <br />
-                                        Nr. Reg. Com. {order.companyRegNo}
-                                    </>
-                                )}
+                            <h2 className="font-semibold">Client</h2>
+                            <p className="mt-1">{order.customerName}</p>
+                            <p>
+                                <a href={`tel:${order.phone}`} className="text-olive hover:underline">
+                                    {order.phone}
+                                </a>
+                            </p>
+                            <p>
+                                <a href={`mailto:${order.email}`} className="break-all text-olive hover:underline">
+                                    {order.email}
+                                </a>
                             </p>
                         </div>
-                    )}
-                </aside>
+
+                        <div>
+                            <h2 className="font-semibold">Livrare</h2>
+                            <p className="mt-1">{order.deliveryName}</p>
+                            {order.address && (
+                                <p className="mt-1 text-neutral-600">
+                                    {order.address}
+                                    <br />
+                                    {order.city}, jud. {order.county}
+                                    {order.postalCode ? `, ${order.postalCode}` : ""}
+                                </p>
+                            )}
+                            {(order.courier || order.awb) && (
+                                <p className="mt-2 text-neutral-600">
+                                    {order.courier}
+                                    {order.awb && (
+                                        <>
+                                            {" "}
+                                            · AWB <span className="font-mono">{order.awb}</span>
+                                        </>
+                                    )}
+                                </p>
+                            )}
+                        </div>
+
+                        <div>
+                            <h2 className="font-semibold">Plată</h2>
+                            <p className="mt-1">{order.paymentName}</p>
+                            <p
+                                className={`capitalize ${
+                                    order.paymentStatus === "paid" ? "text-green-700" : "text-neutral-500"
+                                }`}
+                            >
+                                {paymentLabel(order.paymentStatus)}
+                            </p>
+                        </div>
+
+                        {order.companyName && (
+                            <div>
+                                <h2 className="font-semibold">Factură pe firmă</h2>
+                                <p className="mt-1 text-neutral-600">
+                                    {order.companyName}
+                                    <br />
+                                    CUI {order.companyCui}
+                                    {order.companyRegNo && (
+                                        <>
+                                            <br />
+                                            Nr. Reg. Com. {order.companyRegNo}
+                                        </>
+                                    )}
+                                </p>
+                            </div>
+                        )}
+                    </aside>
+                </div>
             </div>
         </>
     );
