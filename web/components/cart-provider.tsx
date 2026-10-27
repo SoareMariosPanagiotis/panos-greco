@@ -19,6 +19,9 @@ type CartContextValue = {
     updateQuantity: (variantId: string, quantity: number) => void;
     removeItem: (variantId: string) => void;
     clearCart: () => void;
+    // Coșul din lateral: îl deschid și antetul, și pagina produsului
+    drawerOpen: boolean;
+    setDrawerOpen: (open: boolean) => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -27,6 +30,7 @@ const STORAGE_KEY = "panos-greco-cart";
 export function CartProvider({ children }: { children: ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [loaded, setLoaded] = useState(false);
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     // 1. La pornire: citim coșul salvat în browser
     useEffect(() => {
@@ -85,7 +89,17 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     return (
         <CartContext.Provider
-            value={{ items, totalCount, totalPrice, addItem, updateQuantity, removeItem, clearCart }}
+            value={{
+                items,
+                totalCount,
+                totalPrice,
+                addItem,
+                updateQuantity,
+                removeItem,
+                clearCart,
+                drawerOpen,
+                setDrawerOpen,
+            }}
         >
             {children}
         </CartContext.Provider>

@@ -1,56 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import type { DeliveryHints } from "@/app/cos/actions";
 import { useCart } from "@/components/cart-provider";
+import { FreeShippingProgress } from "@/components/free-shipping-progress";
 import { formatPrice } from "@/lib/catalog";
 
-type Props = {
-    freeShipping: { over: number; method: string } | null;
-    alwaysFree: string[];
-};
-
-function FreeShippingProgress({
-                                  subtotal,
-                                  over,
-                                  method,
-                              }: {
-    subtotal: number;
-    over: number;
-    method: string;
-}) {
-    const missing = over - subtotal;
-    const percent = Math.min(100, Math.round((subtotal / over) * 100));
-
-    return (
-        <div className="mt-4 rounded-lg bg-olive-light p-3 text-sm text-olive">
-            <p>
-                {missing > 0 ? (
-                    <>
-                        Mai adaugă produse de <strong>{formatPrice(String(missing))}</strong> și „{method}”
-                        devine gratuită.
-                    </>
-                ) : (
-                    <strong>„{method}” este gratuită pentru comanda ta!</strong>
-                )}
-            </p>
-            <div
-                role="progressbar"
-                aria-label="Progres spre livrarea gratuită"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={percent}
-                className="mt-2 h-2 overflow-hidden rounded-full bg-white"
-            >
-                <div
-                    className="h-full rounded-full bg-olive transition-all"
-                    style={{ width: `${percent}%` }}
-                />
-            </div>
-        </div>
-    );
-}
-
-export function CartView({ freeShipping, alwaysFree }: Props) {
+export function CartView({ hints }: { hints: DeliveryHints }) {
     const { items, totalPrice, updateQuantity, removeItem } = useCart();
 
     if (items.length === 0) {
@@ -121,15 +77,19 @@ export function CartView({ freeShipping, alwaysFree }: Props) {
                     <span>se alege la comandă</span>
                 </div>
 
-                {freeShipping && (
-                    <FreeShippingProgress
-                        subtotal={totalPrice}
-                        over={freeShipping.over}
-                        method={freeShipping.method}
-                    />
+                {hints.freeShipping && (
+                    <div className="mt-4">
+                        <FreeShippingProgress
+                            subtotal={totalPrice}
+                            over={hints.freeShipping.over}
+                            method={hints.freeShipping.method}
+                        />
+                    </div>
                 )}
-                {alwaysFree.length > 0 && (
-                    <p className="mt-2 text-xs text-neutral-500">Mereu gratuit: {alwaysFree.join(", ")}.</p>
+                {hints.alwaysFree.length > 0 && (
+                    <p className="mt-2 text-xs text-neutral-500">
+                        Mereu gratuit: {hints.alwaysFree.join(", ")}.
+                    </p>
                 )}
 
                 <Link

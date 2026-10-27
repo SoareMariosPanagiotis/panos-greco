@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/components/cart-provider";
 import { formatPrice, formatSize, type Variant } from "@/lib/catalog";
@@ -13,10 +12,9 @@ type Props = {
 };
 
 export function VariantPicker({ productName, productSlug, variants }: Props) {
-    const { addItem } = useCart();
+    const { addItem, setDrawerOpen } = useCart();
     const [selectedId, setSelectedId] = useState(variants[0]?.id);
     const [quantity, setQuantity] = useState(1);
-    const [added, setAdded] = useState(false);
 
     const selected = variants.find((variant) => variant.id === selectedId) ?? variants[0];
     if (!selected) return null;
@@ -35,8 +33,8 @@ export function VariantPicker({ productName, productSlug, variants }: Props) {
             quantity,
         );
         setQuantity(1);
-        setAdded(true);
-        setTimeout(() => setAdded(false), 3000);
+        // Deschidem coșul din lateral: clientul vede imediat ce a adăugat
+        setDrawerOpen(true);
     }
 
     return (
@@ -95,15 +93,6 @@ export function VariantPicker({ productName, productSlug, variants }: Props) {
             >
                 Adaugă în coș
             </Button>
-
-            {added && (
-                <p className="mt-3 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800">
-                    Produsul a fost adăugat în coș.{" "}
-                    <Link href="/cos" className="font-medium underline">
-                        Vezi coșul
-                    </Link>
-                </p>
-            )}
 
             <p className="mt-3 text-xs text-neutral-500">Prețurile includ TVA.</p>
         </div>
