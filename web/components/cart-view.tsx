@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { useCart } from "@/components/cart-provider";
 import { formatPrice } from "@/lib/catalog";
 
@@ -66,7 +65,7 @@ export function CartView() {
             </ul>
 
             <aside className="h-fit rounded-xl border bg-white p-6">
-                <h2 className="font-semibold">Sumar comandă</h2>
+                <h2 className="font-semibold">Sumar</h2>
                 <div className="mt-4 flex justify-between">
                     <span>Produse</span>
                     <span>{formatPrice(String(totalPrice))}</span>
@@ -75,14 +74,12 @@ export function CartView() {
                     <span>Livrare</span>
                     <span>se calculează la comandă</span>
                 </div>
-                <div className="mt-4 flex justify-between border-t pt-4 text-lg font-bold">
-                    <span>Total</span>
-                    <span>{formatPrice(String(totalPrice))}</span>
-                </div>
-                <Button disabled size="lg" className="mt-6 w-full bg-olive">
+                <Link
+                    href="/comanda"
+                    className="mt-6 block w-full rounded-lg bg-olive px-4 py-3 text-center font-medium text-white hover:bg-olive/90"
+                >
                     Finalizează comanda
-                </Button>
-                <p className="mt-2 text-xs text-neutral-500">Finalizarea comenzii vine la pasul următor.</p>
+                </Link>
             </aside>
         </div>
     );
