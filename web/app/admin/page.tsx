@@ -9,6 +9,7 @@ import { pluralRo } from "@/lib/orders";
 const sections = [
     { href: "/admin/produse", title: "Produse", text: "Detalii, prețuri și stoc." },
     { href: "/admin/categorii", title: "Categorii", text: "Adaugă, redenumește, ordonează." },
+    { href: "/admin/livrare", title: "Livrare și plată", text: "Prețuri, livrare gratuită, metode active." },
 ];
 
 // Doar numărul comenzilor noi, nu toate datele lor
@@ -39,7 +40,7 @@ async function AdminDashboard() {
                 </form>
             </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {/* Comenzile sunt primele: aici te uiți în fiecare zi */}
                 <Link
                     href={newOrders > 0 ? "/admin/comenzi?stare=new" : "/admin/comenzi"}
