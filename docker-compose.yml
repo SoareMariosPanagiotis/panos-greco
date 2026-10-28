@@ -44,5 +44,26 @@ services:
       - "8025:8025" # pagina web în care vezi mailurile
       - "1025:1025" # SMTP: pe aici programele „predau” mailurile
 
+  # Poștașul: trimite singur mailurile din coadă (codul e în folderul mailer)
+  mailer:
+    image: node:22-alpine
+    container_name: panos-mailer
+    restart: unless-stopped
+    init: true # se oprește imediat la docker compose stop
+    depends_on:
+      - db
+      - mail
+    working_dir: /app
+    volumes:
+      - ./mailer:/app
+    command: sh -c "npm install --no-audit --no-fund && exec node index.mjs"
+    environment:
+      DATABASE_URL: postgres://panos_mailer:${POSTGRES_MAILER_PASSWORD}@db:5432/${POSTGRES_DB}
+      SMTP_HOST: mail
+      SMTP_PORT: "1025"
+      MAIL_FROM: "Panos Greco <office@panos-greco.com>"
+      SHOP_EMAIL: office@panos-greco.com
+      SITE_URL: http://localhost:3000
+
 volumes:
   pgdata:

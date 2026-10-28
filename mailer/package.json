@@ -1,0 +1,13 @@
+{
+  "name": "panos-mailer",
+  "private": true,
+  "type": "module",
+  "description": "Poștașul: trimite mailurile din coada de comenzi",
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "dependencies": {
+    "nodemailer": "^10.1.4",
+    "pg": "^8.13.0"
+  }
+}
