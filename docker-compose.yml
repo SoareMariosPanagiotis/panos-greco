@@ -35,5 +35,14 @@ services:
       - --watch
       - --enhance-graphiql
 
+  # Oficiul poștal de test: prinde toate mailurile și le arată pe http://localhost:8025
+  mail:
+    image: axllent/mailpit
+    container_name: panos-mail
+    restart: unless-stopped
+    ports:
+      - "8025:8025" # pagina web în care vezi mailurile
+      - "1025:1025" # SMTP: pe aici programele „predau” mailurile
+
 volumes:
   pgdata:
