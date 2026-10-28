@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CircleCheck } from "lucide-react";
+import { CircleCheck, CircleX, PackageCheck, Store, Truck } from "lucide-react";
 import { formatPrice, gql } from "@/lib/catalog";
 import { statusLabel } from "@/lib/orders";
 
@@ -19,6 +19,8 @@ type Receipt = {
     email: string;
     phone: string;
     deliveryName: string;
+    courier: string | null;
+    awb: string | null;
     county: string | null;
     city: string | null;
     address: string | null;
@@ -47,7 +49,7 @@ const query = `
   query Receipt($id: UUID!) {
     orderReceipt(receiptId: $id) {
       orderNumber status customerName email phone
-      deliveryName county city address postalCode
+      deliveryName courier awb county city address postalCode
       companyName companyCui paymentName
       subtotal discountTotal shippingTotal paymentFee total createdAt
     }
@@ -64,6 +66,52 @@ function Row({ label, value }: { label: string; value: string }) {
             <dd>{value}</dd>
         </div>
     );
+}
+
+// Ce vede clientul sus, în funcție de starea comenzii
+function statusHero(receipt: Receipt) {
+    const icon = "mx-auto size-12";
+
+    switch (receipt.status) {
+        case "confirmed":
+            return {
+                icon: <CircleCheck className={`${icon} text-green-700`} />,
+                title: "Comanda ta e confirmată",
+                text: "O pregătim acum. Te anunțăm pe email când pleacă spre tine.",
+            };
+        case "ready_for_pickup":
+            return {
+                icon: <Store className={`${icon} text-olive`} />,
+                title: "Comanda te așteaptă în magazin",
+                text: "O poți ridica din magazinul nostru din Galați. Te așteptăm!",
+            };
+        case "shipped":
+            return {
+                icon: <Truck className={`${icon} text-olive`} />,
+                title: "Comanda ta a plecat spre tine",
+                text: receipt.awb
+                    ? `Curier: ${receipt.courier ?? "-"} · AWB ${receipt.awb}`
+                    : "Ajunge în curând la adresa de livrare.",
+            };
+        case "delivered":
+            return {
+                icon: <PackageCheck className={`${icon} text-green-700`} />,
+                title: "Comanda ta a fost livrată",
+                text: "Îți mulțumim că ai ales Panos Greco. Poftă bună!",
+            };
+        case "cancelled":
+            return {
+                icon: <CircleX className={`${icon} text-neutral-400`} />,
+                title: "Comanda a fost anulată",
+                text: "Dacă ai întrebări, răspunde la mailul primit de la noi sau scrie-ne la office@panos-greco.com.",
+            };
+        default:
+            return {
+                icon: <CircleCheck className={`${icon} text-green-700`} />,
+                title: `Mulțumim, ${receipt.customerName}!`,
+                text: "Te contactăm în curând pentru confirmare. Păstrează linkul acestei pagini ca să urmărești comanda.",
+            };
+    }
 }
 
 async function ReceiptView({ params }: { params: Promise<{ id: string }> }) {
@@ -85,21 +133,18 @@ async function ReceiptView({ params }: { params: Promise<{ id: string }> }) {
         timeZone: "Europe/Bucharest",
     });
 
+    const hero = statusHero(receipt);
+
     return (
         <div className="space-y-6">
             <div className="rounded-xl border bg-white p-8 text-center">
-                <CircleCheck className="mx-auto size-12 text-green-700" />
-                <h1 className="mt-4 text-3xl font-bold text-olive">Mulțumim, {receipt.customerName}!</h1>
+                {hero.icon}
+                <h1 className="mt-4 text-3xl font-bold text-olive">{hero.title}</h1>
                 <p className="mt-2 text-neutral-700">
-                    Comanda <strong>#{receipt.orderNumber}</strong> a fost înregistrată.
+                    Comanda <strong>#{receipt.orderNumber}</strong> din {date}
                 </p>
-                <p className="mt-1 text-sm text-neutral-500">
-                    {date} · Stare: {statusLabel(receipt.status)}
-                </p>
-                <p className="mt-4 text-sm text-neutral-600">
-                    Te contactăm în curând pentru confirmare. Păstrează linkul acestei pagini ca să urmărești
-                    comanda.
-                </p>
+                <p className="mt-1 text-sm text-neutral-500">Stare: {statusLabel(receipt.status)}</p>
+                <p className="mt-4 text-sm text-neutral-600">{hero.text}</p>
             </div>
 
             <div className="grid gap-6 md:grid-cols-[1fr_300px]">
