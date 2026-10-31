@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import Link from "next/link";
+import { AccountLink, AccountLinkFallback } from "@/components/account-link";
 import { CartLink } from "@/components/cart-link";
 
 const links = [
@@ -24,6 +26,10 @@ export function SiteHeader() {
                             {link.label}
                         </Link>
                     ))}
+                    {/* Doar bucata asta citește cookie-ul, restul meniului rămâne static */}
+                    <Suspense fallback={<AccountLinkFallback />}>
+                        <AccountLink />
+                    </Suspense>
                     <CartLink />
                 </nav>
             </div>

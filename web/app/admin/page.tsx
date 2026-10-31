@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { logout } from "@/app/admin/actions";
+import { logout } from "@/app/cont/actions";
 import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth";
 import { gql } from "@/lib/catalog";
