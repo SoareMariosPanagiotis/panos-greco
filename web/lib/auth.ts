@@ -5,10 +5,15 @@ import { gql } from "@/lib/catalog";
 
 export const TOKEN_COOKIE = "panos_token";
 
-export type CurrentUser = { email: string; role: string; fullName: string | null };
+export type CurrentUser = {
+    email: string;
+    role: string;
+    firstName: string | null;
+    lastName: string | null;
+};
 export type Session = { user: CurrentUser; token: string };
 
-const meQuery = `query Me { me { email role fullName } }`;
+const meQuery = `query Me { me { email role firstName lastName } }`;
 
 // Citește biletul din cookie (doar pe server)
 export async function getToken() {
@@ -40,11 +45,6 @@ export const getSession = cache(async (): Promise<Session | null> => {
 // Unde ajunge fiecare după ce intră în cont
 export function homeFor(user: CurrentUser) {
     return user.role === "client" ? "/cont" : "/admin";
-}
-
-// Prenumele, pentru „Salut, Marios”
-export function firstName(user: CurrentUser) {
-    return user.fullName?.split(" ")[0] ?? null;
 }
 
 // Pune biletul în cookie. Merge doar din Server Actions.

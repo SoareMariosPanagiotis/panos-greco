@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { logout } from "@/app/cont/actions";
 import { Button } from "@/components/ui/button";
-import { firstName, requireCustomer } from "@/lib/auth";
+import { requireCustomer } from "@/lib/auth";
 
 export const metadata: Metadata = {
     title: "Contul meu · Panos Greco",
@@ -19,7 +19,7 @@ async function AccountOverview() {
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-olive">Contul meu</h1>
-                    <p className="mt-1 text-neutral-600">Salut, {firstName(user) ?? user.email}!</p>
+                    <p className="mt-1 text-neutral-600">Salut, {user.firstName ?? user.email}!</p>
                 </div>
                 <form action={logout}>
                     <Button type="submit" variant="outline">
@@ -32,7 +32,9 @@ async function AccountOverview() {
                 <h2 className="text-lg font-semibold">Datele mele</h2>
                 <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[8rem_1fr]">
                     <dt className="text-neutral-500">Nume</dt>
-                    <dd>{user.fullName ?? "—"}</dd>
+                    <dd>{user.lastName ?? "—"}</dd>
+                    <dt className="text-neutral-500">Prenume</dt>
+                    <dd>{user.firstName ?? "—"}</dd>
                     <dt className="text-neutral-500">Email</dt>
                     <dd>{user.email}</dd>
                 </dl>

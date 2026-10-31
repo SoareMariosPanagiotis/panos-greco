@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { UserRound } from "lucide-react";
-import { firstName, getSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 
 function AccountLinkView({ href, label }: { href: string; label: string }) {
     return (
@@ -30,6 +30,10 @@ export async function AccountLink() {
         return <AccountLinkView href="/admin" label="Administrare" />;
     }
 
-    const name = firstName(user);
-    return <AccountLinkView href="/cont" label={name ? `Salut, ${name}` : "Contul meu"} />;
+    return (
+        <AccountLinkView
+            href="/cont"
+            label={user.firstName ? `Salut, ${user.firstName}` : "Contul meu"}
+        />
+    );
 }
