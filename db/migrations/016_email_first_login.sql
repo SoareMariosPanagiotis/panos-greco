@@ -1,24 +1,38 @@
 -- 016: Intrarea în cont în doi pași, ca la eMAG, și numele separat de prenume.
 --   Pasul 1: clientul scrie emailul, iar noi verificăm dacă are deja cont.
 --   Pasul 2: dacă are, îi cerem parola; dacă nu, îi facem cont nou.
+--
+-- Migrația poate fi rulată de mai multe ori fără probleme (de exemplu după o rulare
+-- întreruptă): fiecare pas verifică întâi ce există deja.
+-- begin/commit: ori se aplică tot, ori nimic.
+
+begin;
 
 -- 1. Numele și prenumele în coloane separate.
 --    La „Nume și prenume” unii scriu „Popescu Ion”, alții „Ion Popescu”:
 --    dintr-un singur câmp nu putem ști sigur care e prenumele.
 alter table auth.users
-    add column first_name text check (first_name is null or char_length(first_name) between 1 and 50),
-    add column last_name  text check (last_name  is null or char_length(last_name)  between 1 and 50);
+    add column if not exists first_name text check (first_name is null or char_length(first_name) between 1 and 50),
+    add column if not exists last_name  text check (last_name  is null or char_length(last_name)  between 1 and 50);
 
--- Conturile de test făcute cu un singur câmp: primul cuvânt devine prenumele, restul numele
-update auth.users
-set first_name = split_part(btrim(full_name), ' ', 1),
-    last_name  = nullif(btrim(substr(btrim(full_name), char_length(split_part(btrim(full_name), ' ', 1)) + 1)), '')
-where full_name is not null;
+-- Conturile de test făcute cu un singur câmp: primul cuvânt devine prenumele, restul numele.
+-- Doar dacă vechea coloană full_name mai există.
+do $$
+begin
+    if exists (select 1 from information_schema.columns
+               where table_schema = 'auth' and table_name = 'users' and column_name = 'full_name') then
+        update auth.users
+        set first_name = split_part(btrim(full_name), ' ', 1),
+            last_name  = nullif(btrim(substr(btrim(full_name), char_length(split_part(btrim(full_name), ' ', 1)) + 1)), '')
+        where full_name is not null;
 
-alter table auth.users drop column full_name;
+        alter table auth.users drop column full_name;
+    end if;
+end;
+$$;
 
--- 2. Pasul 1 din formular: există deja un cont cu emailul ăsta?
-create function auth.account_exists(email text)
+-- 2. Pasul 1 din formular: există deja un cont cu emailul ăsta
+create or replace function auth.account_exists(email text)
     returns boolean
     language sql
     stable
@@ -35,9 +49,9 @@ grant execute on function auth.account_exists(text) to panos_anonymous;
 
 -- 3. Înregistrarea primește acum prenumele și numele separat.
 --    Funcția veche, cu un singur câmp pentru nume, dispare.
-drop function auth.register(text, text, text);
+drop function if exists auth.register(text, text, text);
 
-create function auth.register(first_name text, last_name text, email text, password text)
+create or replace function auth.register(first_name text, last_name text, email text, password text)
     returns auth.jwt_token
     language plpgsql
     strict
@@ -85,3 +99,5 @@ end;
 $$;
 
 grant execute on function auth.register(text, text, text, text) to panos_anonymous;
+
+commit;
