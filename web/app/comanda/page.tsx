@@ -1,10 +1,13 @@
 import { Suspense } from "react";
 import {
     CheckoutForm,
+    type CheckoutAccount,
     type DeliveryOption,
     type PaymentOption,
 } from "@/components/checkout/checkout-form";
+import { getSession } from "@/lib/auth";
 import { gql } from "@/lib/catalog";
+import { getMyAddresses } from "@/lib/customer";
 
 // Doar metodele ACTIVE ajung aici: RLS le ascunde pe celelalte de vizitatori
 const query = `
@@ -18,16 +21,39 @@ const query = `
   }
 `;
 
+// Clientul conectat: îi completăm formularul cu datele din cont
+async function loadAccount(): Promise<CheckoutAccount | null> {
+    const session = await getSession();
+    if (!session || session.user.role !== "client") return null; // vizitator sau admin
+
+    const { user, token } = session;
+    // Dacă adresele nu se pot încărca, comanda merge mai departe fără ele
+    const addresses = await getMyAddresses(token).catch(() => []);
+    return {
+        lastName: user.lastName ?? "",
+        firstName: user.firstName ?? "",
+        email: user.email,
+        phone: user.phone ?? "",
+        addresses,
+    };
+}
+
 async function CheckoutLoader() {
-    const data = await gql<{
-        allDeliveryMethods: { nodes: DeliveryOption[] };
-        allPaymentMethods: { nodes: PaymentOption[] };
-    }>(query);
+    // Metodele le cerem FĂRĂ bilet: ca vizitator vezi doar metodele active
+    // (cu biletul de admin le-ai vedea și pe cele oprite)
+    const [data, account] = await Promise.all([
+        gql<{
+            allDeliveryMethods: { nodes: DeliveryOption[] };
+            allPaymentMethods: { nodes: PaymentOption[] };
+        }>(query),
+        loadAccount(),
+    ]);
 
     return (
         <CheckoutForm
             deliveryOptions={data.allDeliveryMethods.nodes}
             paymentOptions={data.allPaymentMethods.nodes}
+            account={account}
         />
     );
 }

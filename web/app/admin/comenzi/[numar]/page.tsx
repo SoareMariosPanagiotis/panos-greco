@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OrderActions } from "@/components/admin/order-actions";
-import { OrderStatusBadge } from "@/components/admin/order-status-badge";
+import { OrderStatusBadge } from "@/components/order-status-badge";
 import { requireAdmin } from "@/lib/auth";
 import { formatPrice, gql } from "@/lib/catalog";
 import { formatOrderDate, paymentLabel, statusLabel } from "@/lib/orders";

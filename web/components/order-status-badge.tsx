@@ -1,6 +1,6 @@
 import { ORDER_STATUS_STYLES, statusLabel } from "@/lib/orders";
 
-// Eticheta colorată cu starea comenzii (o folosim în listă și în pagina comenzii)
+// Eticheta colorată cu starea comenzii. O folosim în admin și în contul clientului.
 export function OrderStatusBadge({ status }: { status: string }) {
     const colors = ORDER_STATUS_STYLES[status] ?? "bg-neutral-100 text-neutral-700";
 

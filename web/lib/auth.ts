@@ -10,10 +10,11 @@ export type CurrentUser = {
     role: string;
     firstName: string | null;
     lastName: string | null;
+    phone: string | null; // din migrația 018 (null = nu și-a pus încă telefonul)
 };
 export type Session = { user: CurrentUser; token: string };
 
-const meQuery = `query Me { me { email role firstName lastName } }`;
+const meQuery = `query Me { me { email role firstName lastName phone } }`;
 
 // Citește biletul din cookie (doar pe server)
 export async function getToken() {

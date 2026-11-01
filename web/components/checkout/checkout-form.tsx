@@ -9,12 +9,13 @@ import {
     type CheckoutState,
     type LiveVariant,
 } from "@/app/comanda/actions";
+import { AddressFields } from "@/components/address-fields";
 import { useCart } from "@/components/cart-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatPrice } from "@/lib/catalog";
-import { COUNTIES } from "@/lib/counties";
+import { formatPlace, sameCity, type SavedAddress } from "@/lib/customer";
 
 export type DeliveryOption = {
     code: string;
@@ -33,15 +34,22 @@ export type PaymentOption = {
     fee: string;
 };
 
+// Clientul conectat: completăm formularul cu datele din cont (vezi app/comanda/page.tsx)
+export type CheckoutAccount = {
+    lastName: string;
+    firstName: string;
+    email: string;
+    phone: string;
+    addresses: SavedAddress[]; // implicita prima
+};
+
 type Props = {
     deliveryOptions: DeliveryOption[];
     paymentOptions: PaymentOption[];
+    account: CheckoutAccount | null; // null = vizitator
 };
 
 const initialState: CheckoutState = { error: null };
-
-const selectClass =
-    "h-9 w-full rounded-lg border bg-transparent px-3 text-sm outline-none focus-visible:border-olive";
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
     return (
@@ -91,7 +99,7 @@ function ChoiceCard({ name, value, checked, onSelect, title, price, description,
     );
 }
 
-export function CheckoutForm({ deliveryOptions, paymentOptions }: Props) {
+export function CheckoutForm({ deliveryOptions, paymentOptions, account }: Props) {
     const { items, clearCart } = useCart();
     const router = useRouter();
     const [state, formAction, pending] = useActionState(submitOrder, initialState);
@@ -100,6 +108,8 @@ export function CheckoutForm({ deliveryOptions, paymentOptions }: Props) {
     const [paymentCode, setPaymentCode] = useState(paymentOptions[0]?.code ?? "");
     const [wantsInvoice, setWantsInvoice] = useState(false);
     const [accepted, setAccepted] = useState(false);
+    // Adresa de livrare: id-ul unei adrese salvate sau "new" (o scrie acum). Pornim de la cea implicită.
+    const [addressChoice, setAddressChoice] = useState(account?.addresses[0]?.id ?? "new");
 
     // ---------- Prețurile reale, cerute din baza de date ----------
     const [live, setLive] = useState<Record<string, LiveVariant> | null>(null);
@@ -151,6 +161,16 @@ export function CheckoutForm({ deliveryOptions, paymentOptions }: Props) {
     // ---------- Calcule, cu prețurile REALE ----------
     const delivery = deliveryOptions.find((option) => option.code === deliveryCode);
     const payment = paymentOptions.find((option) => option.code === paymentCode);
+
+    // Adresele salvate care merg cu livrarea aleasă: la livrarea locală, doar cele din orașul ei
+    const savedChoices = (account?.addresses ?? []).filter(
+        (saved) => !delivery?.city || sameCity(saved.city, delivery.city),
+    );
+    // Adresa folosită: cea aleasă; dacă nu merge cu livrarea, prima care merge; null = o scrie acum
+    const chosenAddress =
+        addressChoice === "new"
+            ? null
+            : (savedChoices.find((saved) => saved.id === addressChoice) ?? savedChoices[0] ?? null);
 
     const lines = items.map((item) => {
         const current = live?.[item.variantId];
@@ -212,7 +232,7 @@ export function CheckoutForm({ deliveryOptions, paymentOptions }: Props) {
                                 id="lastName"
                                 name="lastName"
                                 autoComplete="family-name"
-                                defaultValue={values?.lastName ?? ""}
+                                defaultValue={values?.lastName ?? account?.lastName ?? ""}
                                 maxLength={50}
                                 required
                             />
@@ -223,7 +243,7 @@ export function CheckoutForm({ deliveryOptions, paymentOptions }: Props) {
                                 id="firstName"
                                 name="firstName"
                                 autoComplete="given-name"
-                                defaultValue={values?.firstName ?? ""}
+                                defaultValue={values?.firstName ?? account?.firstName ?? ""}
                                 maxLength={50}
                                 required
                             />
@@ -232,14 +252,26 @@ export function CheckoutForm({ deliveryOptions, paymentOptions }: Props) {
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                autoComplete="email"
-                                defaultValue={values?.email ?? ""}
-                                required
-                            />
+                            {account ? (
+                                // Cu cont, comanda merge pe emailul contului: acolo vin confirmările
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    value={account.email}
+                                    readOnly
+                                    className="bg-neutral-50 text-neutral-600"
+                                />
+                            ) : (
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    autoComplete="email"
+                                    defaultValue={values?.email ?? ""}
+                                    required
+                                />
+                            )}
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="phone">Telefon</Label>
@@ -249,9 +281,12 @@ export function CheckoutForm({ deliveryOptions, paymentOptions }: Props) {
                                 type="tel"
                                 autoComplete="tel"
                                 placeholder="0722 123 456"
-                                defaultValue={values?.phone ?? ""}
+                                defaultValue={values?.phone ?? account?.phone ?? ""}
                                 required
                             />
+                            {account && !account.phone && (
+                                <p className="text-xs text-neutral-500">Îl păstrăm în cont pentru comenzile viitoare.</p>
+                            )}
                         </div>
                     </div>
                 </Section>
@@ -281,67 +316,55 @@ export function CheckoutForm({ deliveryOptions, paymentOptions }: Props) {
 
                 {delivery?.needsAddress && (
                     <Section title="Adresa de livrare">
-                        {/* key: când schimbi metoda de livrare, câmpurile pornesc de la zero */}
-                        <div key={delivery.code} className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="county">Județ</Label>
-                                <select
-                                    id="county"
-                                    name="county"
-                                    required
-                                    className={selectClass}
-                                    defaultValue={
-                                        values?.county ??
-                                        (delivery.city && COUNTIES.includes(delivery.city) ? delivery.city : "")
-                                    }
-                                >
-                                    <option value="" disabled>
-                                        Alege județul
-                                    </option>
-                                    {COUNTIES.map((county) => (
-                                        <option key={county} value={county}>
-                                            {county}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="city">Localitate</Label>
-                                {delivery.city ? (
-                                    <Input id="city" name="city" value={delivery.city} readOnly className="bg-neutral-50" />
-                                ) : (
-                                    <Input
-                                        id="city"
-                                        name="city"
-                                        autoComplete="address-level2"
-                                        defaultValue={values?.city ?? ""}
-                                        required
-                                    />
+                        {/* Adresele salvate în cont */}
+                        {savedChoices.map((saved) => (
+                            <ChoiceCard
+                                key={saved.id}
+                                name="addressChoice"
+                                value={saved.id}
+                                checked={chosenAddress?.id === saved.id}
+                                onSelect={() => setAddressChoice(saved.id)}
+                                title={saved.address}
+                                description={formatPlace(saved)}
+                                note={saved.isDefault ? "Adresa implicită" : null}
+                            />
+                        ))}
+                        {savedChoices.length > 0 && (
+                            <ChoiceCard
+                                name="addressChoice"
+                                value="new"
+                                checked={chosenAddress === null}
+                                onSelect={() => setAddressChoice("new")}
+                                title="Altă adresă"
+                            />
+                        )}
+
+                        {chosenAddress ? (
+                            // Adresa salvată pleacă prin câmpuri ascunse, cu aceleași nume ca formularul
+                            // de mai jos: pentru server e o comandă ca oricare alta
+                            <>
+                                <input type="hidden" name="county" value={chosenAddress.county} />
+                                <input type="hidden" name="city" value={chosenAddress.city} />
+                                <input type="hidden" name="address" value={chosenAddress.address} />
+                                <input type="hidden" name="postalCode" value={chosenAddress.postalCode ?? ""} />
+                            </>
+                        ) : (
+                            <>
+                                {/* key: când schimbi metoda de livrare, câmpurile pornesc de la zero */}
+                                <AddressFields key={delivery.code} defaults={values} fixedCity={delivery.city} />
+                                {account && (
+                                    <label className="flex items-center gap-2 text-sm">
+                                        <input
+                                            type="checkbox"
+                                            name="saveAddress"
+                                            defaultChecked
+                                            className="size-4 accent-olive"
+                                        />
+                                        Salvează adresa în cont pentru comenzile viitoare
+                                    </label>
                                 )}
-                            </div>
-                            <div className="space-y-2 sm:col-span-2">
-                                <Label htmlFor="address">Adresă</Label>
-                                <Input
-                                    id="address"
-                                    name="address"
-                                    autoComplete="street-address"
-                                    placeholder="Stradă, număr, bloc, scară, apartament"
-                                    defaultValue={values?.address ?? ""}
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="postalCode">Cod poștal (opțional)</Label>
-                                <Input
-                                    id="postalCode"
-                                    name="postalCode"
-                                    inputMode="numeric"
-                                    maxLength={6}
-                                    autoComplete="postal-code"
-                                    defaultValue={values?.postalCode ?? ""}
-                                />
-                            </div>
-                        </div>
+                            </>
+                        )}
                     </Section>
                 )}
 

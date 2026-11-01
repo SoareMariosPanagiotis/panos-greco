@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { OrderStatusBadge } from "@/components/admin/order-status-badge";
+import { OrderStatusBadge } from "@/components/order-status-badge";
 import { requireAdmin } from "@/lib/auth";
 import { formatPrice, gql } from "@/lib/catalog";
 import {
