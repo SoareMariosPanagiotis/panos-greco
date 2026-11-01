@@ -204,15 +204,30 @@ export function CheckoutForm({ deliveryOptions, paymentOptions }: Props) {
                 />
 
                 <Section title="Date de contact">
-                    <div className="space-y-2">
-                        <Label htmlFor="customerName">Nume și prenume</Label>
-                        <Input
-                            id="customerName"
-                            name="customerName"
-                            autoComplete="name"
-                            defaultValue={values?.customerName ?? ""}
-                            required
-                        />
+                    {/* Nume și prenume separat, ca la cont (vezi migrația 017) */}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="lastName">Nume</Label>
+                            <Input
+                                id="lastName"
+                                name="lastName"
+                                autoComplete="family-name"
+                                defaultValue={values?.lastName ?? ""}
+                                maxLength={50}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="firstName">Prenume</Label>
+                            <Input
+                                id="firstName"
+                                name="firstName"
+                                autoComplete="given-name"
+                                defaultValue={values?.firstName ?? ""}
+                                maxLength={50}
+                                required
+                            />
+                        </div>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                         <div className="space-y-2">

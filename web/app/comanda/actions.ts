@@ -62,7 +62,8 @@ export async function getLiveVariants(ids: string[]): Promise<LiveVariant[]> {
 // ---------- Plasarea comenzii ----------
 
 export type CheckoutValues = {
-    customerName: string;
+    lastName: string;
+    firstName: string;
     email: string;
     phone: string;
     county: string;
@@ -109,7 +110,8 @@ export async function submitOrder(
     formData: FormData,
 ): Promise<CheckoutState> {
     const values: CheckoutValues = {
-        customerName: text(formData, "customerName"),
+        lastName: text(formData, "lastName"),
+        firstName: text(formData, "firstName"),
         email: text(formData, "email"),
         phone: text(formData, "phone"),
         county: text(formData, "county"),
@@ -145,7 +147,8 @@ export async function submitOrder(
                 quantities,
                 deliveryCode: text(formData, "deliveryCode"),
                 paymentCode: text(formData, "paymentCode"),
-                customerName: values.customerName,
+                firstName: values.firstName,
+                lastName: values.lastName,
                 email: values.email,
                 phone: values.phone,
                 county: values.county || null,
