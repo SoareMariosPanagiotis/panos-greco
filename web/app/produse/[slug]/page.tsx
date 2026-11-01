@@ -2,9 +2,10 @@ import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PRODUCT_LABEL_FIELDS, ProductLabel, type ProductLabelData } from "@/components/product-label";
 import { Badge } from "@/components/ui/badge";
 import { VariantPicker } from "@/components/variant-picker";
-import { gql, type ProductDetails } from "@/lib/catalog";
+import { formatSize, gql, type ProductDetails } from "@/lib/catalog";
 
 const query = `
   query ProductPage($slug: String!) {
@@ -17,13 +18,14 @@ const query = `
       productVariantsByProductId(orderBy: PACK_SIZE_ASC) {
         nodes { id packSize packUnit price }
       }
+      ${PRODUCT_LABEL_FIELDS}
     }
   }
 `;
 
 async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
-    const data = await gql<{ productBySlug: ProductDetails | null }>(query, { slug });
+    const data = await gql<{ productBySlug: (ProductDetails & ProductLabelData) | null }>(query, { slug });
     const product = data.productBySlug;
 
     if (!product) notFound();
@@ -72,6 +74,14 @@ async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
                     </p>
                 </section>
             )}
+
+            {/* Eticheta: ingrediente, alergeni, valori nutriționale (migrația 025) */}
+            <ProductLabel
+                label={product}
+                sizes={product.productVariantsByProductId.nodes.map((variant) =>
+                    formatSize(variant.packSize, variant.packUnit),
+                )}
+            />
         </>
     );
 }

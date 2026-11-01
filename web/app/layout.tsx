@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { CartProvider } from "@/components/cart-provider";
+import { SiteFooter, SiteFooterFallback } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
@@ -33,6 +35,10 @@ export default function RootLayout({
         <CartProvider>
             <SiteHeader />
             {children}
+            {/* Subsolul citește datele firmei din baza de date; până vin, arată restul */}
+            <Suspense fallback={<SiteFooterFallback />}>
+                <SiteFooter />
+            </Suspense>
         </CartProvider>
         </body>
         </html>

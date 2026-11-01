@@ -2,10 +2,18 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OrderActions } from "@/components/admin/order-actions";
+import { WithdrawalActions } from "@/components/admin/withdrawal-actions";
 import { OrderStatusBadge } from "@/components/order-status-badge";
 import { requireAdmin } from "@/lib/auth";
 import { formatPrice, gql } from "@/lib/catalog";
 import { formatOrderDate, paymentLabel, statusLabel } from "@/lib/orders";
+import {
+    WITHDRAWAL_STATUS_STYLES,
+    formatDeadline,
+    formatIban,
+    formatRequestTime,
+    withdrawalStatusLabel,
+} from "@/lib/withdrawals";
 
 type OrderItem = {
     id: string;
@@ -17,6 +25,22 @@ type OrderItem = {
 };
 
 type HistoryEntry = { id: string; status: string; createdAt: string };
+
+// O cerere de retragere (migrația 024), cu produsele ei
+type Withdrawal = {
+    id: string;
+    createdAt: string;
+    status: string;
+    customerName: string;
+    email: string;
+    reason: string | null;
+    iban: string | null;
+    statement: string;
+    adminNote: string | null;
+    withdrawalItemsByWithdrawalId: {
+        nodes: { quantity: number; orderItemByOrderItemId: { productName: string; sizeLabel: string } | null }[];
+    };
+};
 
 type AdminOrder = {
     id: string;
@@ -45,9 +69,11 @@ type AdminOrder = {
     paymentFee: string;
     total: string;
     customerNote: string | null;
+    withdrawalDeadline: string | null; // câmp calculat: până când se poate retrage clientul
     deliveryMethodByDeliveryMethodId: { needsAddress: boolean; needsAwb: boolean } | null;
     orderItemsByOrderId: { nodes: OrderItem[] };
     orderStatusHistoriesByOrderId: { nodes: HistoryEntry[] };
+    withdrawalsByOrderId: { nodes: Withdrawal[] };
 };
 
 // Comanda + metoda de livrare + produsele + istoricul, într-o singură cerere.
@@ -62,6 +88,7 @@ const query = `
       paymentName paymentStatus
       subtotal discountTotal shippingTotal paymentFee total
       customerNote
+      withdrawalDeadline
       deliveryMethodByDeliveryMethodId { needsAddress needsAwb }
       orderItemsByOrderId(orderBy: PRODUCT_NAME_ASC) {
         nodes { id productName sizeLabel unitPrice quantity lineTotal }
@@ -69,9 +96,79 @@ const query = `
       orderStatusHistoriesByOrderId(orderBy: CREATED_AT_ASC) {
         nodes { id status createdAt }
       }
+      withdrawalsByOrderId(orderBy: CREATED_AT_ASC) {
+        nodes {
+          id createdAt status customerName email reason iban statement adminNote
+          withdrawalItemsByWithdrawalId {
+            nodes { quantity orderItemByOrderItemId { productName sizeLabel } }
+          }
+        }
+      }
     }
   }
 `;
+
+// Cererile de retragere ale comenzii: ce returnează clientul și ce ai de făcut
+function WithdrawalsSection({ withdrawals, deadline }: { withdrawals: Withdrawal[]; deadline: string | null }) {
+    const waiting = withdrawals.some((w) => w.status === "received");
+
+    return (
+        <section className={`rounded-xl border bg-white p-6 ${waiting ? "border-amber-400" : ""}`}>
+            <h2 className="font-semibold">Retragere din contract</h2>
+            {deadline && <p className="mt-1 text-xs text-neutral-500">Termen: {formatDeadline(deadline)}</p>}
+
+            <div className="mt-4 space-y-6">
+                {withdrawals.map((withdrawal) => (
+                    <article key={withdrawal.id} className="space-y-3 border-t pt-4 text-sm first:border-t-0 first:pt-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-medium">Cerere din {formatRequestTime(withdrawal.createdAt)}</p>
+                            <span
+                                className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                    WITHDRAWAL_STATUS_STYLES[withdrawal.status] ?? "bg-neutral-100 text-neutral-700"
+                                }`}
+                            >
+                                {withdrawalStatusLabel(withdrawal.status)}
+                            </span>
+                        </div>
+
+                        <ul className="list-disc pl-5">
+                            {withdrawal.withdrawalItemsByWithdrawalId.nodes.map((item, index) => (
+                                <li key={index}>
+                                    {item.quantity} × {item.orderItemByOrderItemId?.productName}{" "}
+                                    <span className="text-neutral-500">({item.orderItemByOrderItemId?.sizeLabel})</span>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <dl className="grid gap-1 text-neutral-700 sm:grid-cols-[120px_1fr]">
+                            <dt className="text-neutral-500">Confirmare la</dt>
+                            <dd className="break-all">{withdrawal.email}</dd>
+                            {withdrawal.reason && (
+                                <>
+                                    <dt className="text-neutral-500">Motiv</dt>
+                                    <dd className="whitespace-pre-line">{withdrawal.reason}</dd>
+                                </>
+                            )}
+                            {withdrawal.iban && (
+                                <>
+                                    <dt className="text-neutral-500">IBAN</dt>
+                                    <dd className="font-mono">{formatIban(withdrawal.iban)}</dd>
+                                </>
+                            )}
+                        </dl>
+
+                        <details className="rounded-lg bg-neutral-50 px-3 py-2">
+                            <summary className="cursor-pointer text-neutral-600">Declarația clientului</summary>
+                            <p className="mt-2 text-neutral-700">{withdrawal.statement}</p>
+                        </details>
+
+                        <WithdrawalActions id={withdrawal.id} status={withdrawal.status} adminNote={withdrawal.adminNote} />
+                    </article>
+                ))}
+            </div>
+        </section>
+    );
+}
 
 function Row({ label, value }: { label: string; value: string }) {
     return (
@@ -100,6 +197,7 @@ async function OrderDetails({ params }: { params: Promise<{ numar: string }> }) 
     const items = order.orderItemsByOrderId.nodes;
     const history = order.orderStatusHistoriesByOrderId.nodes;
     const method = order.deliveryMethodByDeliveryMethodId;
+    const withdrawals = order.withdrawalsByOrderId.nodes;
 
     return (
         <>
@@ -153,6 +251,10 @@ async function OrderDetails({ params }: { params: Promise<{ numar: string }> }) 
                             </div>
                         </dl>
                     </section>
+
+                    {withdrawals.length > 0 && (
+                        <WithdrawalsSection withdrawals={withdrawals} deadline={order.withdrawalDeadline} />
+                    )}
 
                     <section className="rounded-xl border bg-white p-6">
                         <h2 className="font-semibold">Istoric</h2>

@@ -6,6 +6,9 @@ const OLIVE = "#5a6b2e"; // aceeași culoare ca pe site
 const OLIVE_LIGHT = "#f4f5ec";
 const MUTED = "#6b7280";
 
+// Eticheta cerută de lege pentru butonul de retragere (OUG 34/2014, modificată de OUG 18/2026)
+const WITHDRAW_LABEL = "Retrageți-vă din contract aici";
+
 // Ce a scris clientul (nume, adresă, notă) nu ajunge niciodată „crud” în HTML
 function esc(value) {
     return String(value ?? "")
@@ -14,6 +17,19 @@ function esc(value) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#39;");
+}
+
+// „1 noiembrie 2026, ora 13:45”, în ora României
+function dateTime(iso) {
+    const date = new Date(iso);
+    const day = date.toLocaleDateString("ro-RO", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+        timeZone: "Europe/Bucharest",
+    });
+    const time = date.toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Bucharest" });
+    return `${day}, ora ${time}`;
 }
 
 function lei(amount) {
@@ -167,6 +183,25 @@ function button(href, label) {
     return `<p style="margin:24px 0 0"><a href="${esc(href)}" style="display:inline-block;background:${OLIVE};color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:bold">${esc(label)}</a></p>`;
 }
 
+// Dreptul de retragere, amintit în mailul de confirmare și în cel de livrare.
+// Linkul duce direct la formularul comenzii (id-ul lung, greu de ghicit, ca la confirmare).
+function withdrawalLink(order, config) {
+    return `${config.siteUrl}/retragere/${order.id}`;
+}
+
+function withdrawalNote(status, order, config) {
+    if (status !== "new" && status !== "delivered") return "";
+    const link = withdrawalLink(order, config);
+    const intro =
+        status === "new"
+            ? "Te poți retrage din contract în 14 zile de la primirea produselor, fără să ne spui motivul:"
+            : "Dacă te răzgândești, ai 14 zile de la primire ca să te retragi din contract, fără să ne spui motivul:";
+    return `<p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:${MUTED}">${intro}
+<a href="${esc(link)}" style="color:${OLIVE};font-weight:bold">${WITHDRAW_LABEL}</a>.
+Detalii în <a href="${esc(config.siteUrl)}/termeni" style="color:${OLIVE}">Termeni și condiții</a>
+și în <a href="${esc(config.siteUrl)}/retur" style="color:${OLIVE}">Politica de retur</a>.</p>`;
+}
+
 // Varianta doar text, pentru programele de mail care nu afișează HTML
 function itemsText(order) {
     const lines = order.items.map(
@@ -186,7 +221,8 @@ function customerEmail(status, message, order, config) {
 <p style="margin:0 0 8px;font-size:15px">Bună, ${esc(order.customer_name)}!</p>
 ${message.lines.map((line) => `<p style="margin:0 0 8px;font-size:15px;line-height:1.5">${esc(line)}</p>`).join("")}
 ${showItems ? itemsTable(order) + detailsBlock(order) : ""}
-${button(link, `Vezi comanda #${order.order_number}`)}`;
+${button(link, `Vezi comanda #${order.order_number}`)}
+${withdrawalNote(status, order, config)}`;
 
     const text = [
         `Bună, ${order.customer_name}!`,
@@ -195,6 +231,9 @@ ${button(link, `Vezi comanda #${order.order_number}`)}`;
         "",
         showItems ? itemsText(order) : "",
         `Vezi comanda: ${link}`,
+        status === "new" || status === "delivered"
+            ? `\nTe poți retrage din contract în 14 zile de la primire, fără să ne spui motivul: ${withdrawalLink(order, config)}`
+            : "",
     ].join("\n");
 
     return {
@@ -311,4 +350,127 @@ ${button(message.link, message.button)}
         text: [...message.lines, "", `${message.button}: ${message.link}`].join("\n"),
         html: layout(message.subject, body, config),
     };
+}
+
+// ---------- Retragerea din contract (migrația 024) ----------
+
+// Ce urmează după cerere: aceleași reguli ca pe site și în Politica de retur
+function withdrawalNextSteps(data) {
+    const address = data.shop?.shop_address;
+    const steps = [
+        address
+            ? `Trimite-ne produsele înapoi în cel mult 14 zile, la adresa: ${address}. Dacă nu ai primit încă coletul, îl poți refuza la livrare.`
+            : "Trimite-ne produsele înapoi în cel mult 14 zile. Îți scriem în curând adresa pentru retur. Dacă nu ai primit încă coletul, îl poți refuza la livrare.",
+        "Păstrează produsele sigilate: alimentele desfăcute nu mai pot fi returnate, din motive de igienă.",
+        "Îți returnăm banii în cel mult 14 zile de la primirea cererii. Putem aștepta până primim produsele sau dovada că le-ai trimis.",
+    ];
+    if (data.order.paid_on_delivery) {
+        steps.push(
+            data.has_iban
+                ? "Banii îi trimitem în contul IBAN pe care ni l-ai dat."
+                : "Ai plătit la livrare: răspunde la acest mail cu IBAN-ul în care vrei să primești banii.",
+        );
+    }
+    steps.push("Costul transportului pentru retur e al tău.");
+    return steps;
+}
+
+function withdrawalItemsList(data) {
+    return data.items
+        .map(
+            (item) =>
+                `<li style="margin:0 0 4px">${esc(item.quantity)} × ${esc(item.product_name)} <span style="color:${MUTED}">(${esc(item.size_label)})</span></li>`,
+        )
+        .join("");
+}
+
+// Confirmarea de primire pentru client: legea cere conținutul declarației, data și ora trimiterii
+function customerWithdrawalEmail(data, config) {
+    const n = data.order.order_number;
+    const when = dateTime(data.created_at);
+    const hello = data.order.first_name ? `Bună, ${data.order.first_name}!` : "Bună!";
+    const steps = withdrawalNextSteps(data);
+    const link = withdrawalLink(data.order, config);
+
+    const body = `<h1 style="margin:0 0 12px;font-size:22px;color:${OLIVE}">Am primit cererea ta de retragere</h1>
+<p style="margin:0 0 8px;font-size:15px">${esc(hello)}</p>
+<p style="margin:0 0 8px;font-size:15px;line-height:1.5">Îți confirmăm că am primit cererea ta de retragere din contract pentru comanda <strong>#${esc(n)}</strong>, trimisă pe <strong>${esc(when)}</strong>.</p>
+<p style="margin:16px 0 6px;font-size:14px;font-weight:bold">Declarația ta</p>
+<p style="margin:0;padding:12px 14px;background:${OLIVE_LIGHT};border-left:4px solid ${OLIVE};font-size:14px;line-height:1.5">${esc(data.statement)}</p>
+<p style="margin:16px 0 6px;font-size:14px;font-weight:bold">Produsele</p>
+<ul style="margin:0;padding-left:20px;font-size:14px;line-height:1.5">${withdrawalItemsList(data)}</ul>
+<p style="margin:16px 0 6px;font-size:14px;font-weight:bold">Ce urmează</p>
+<ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.5">${steps.map((step) => `<li style="margin:0 0 6px">${esc(step)}</li>`).join("")}</ol>
+${button(link, "Vezi cererea pe site")}`;
+
+    const text = [
+        hello,
+        "",
+        `Îți confirmăm că am primit cererea ta de retragere din contract pentru comanda #${n}, trimisă pe ${when}.`,
+        "",
+        "Declarația ta:",
+        data.statement,
+        "",
+        "Ce urmează:",
+        ...steps.map((step, index) => `${index + 1}. ${step}`),
+        "",
+        `Vezi cererea pe site: ${link}`,
+    ].join("\n");
+
+    return {
+        from: config.from,
+        to: data.email,
+        replyTo: config.shopEmail,
+        subject: `Am primit cererea ta de retragere · comanda #${n}`,
+        text,
+        html: layout(`Confirmarea cererii de retragere, trimisă pe ${when}`, body, config),
+    };
+}
+
+// Notificarea pentru tine. IBAN-ul nu pleacă pe mail: îl vezi doar în admin.
+function shopWithdrawalEmail(data, config) {
+    const n = data.order.order_number;
+    const when = dateTime(data.created_at);
+    const link = `${config.siteUrl}/admin/comenzi/${n}`;
+    const reason = data.reason
+        ? `<p style="margin:16px 0 0;padding:12px;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;font-size:14px"><strong>Motivul clientului:</strong> ${esc(data.reason)}</p>`
+        : "";
+    const iban = data.has_iban
+        ? `<p style="margin:12px 0 0;font-size:14px">A trimis și IBAN-ul pentru rambursare: îl găsești în admin.</p>`
+        : "";
+
+    const body = `<h1 style="margin:0 0 12px;font-size:22px;color:${OLIVE}">Cerere de retragere · comanda #${esc(n)}</h1>
+<p style="margin:0;font-size:15px;line-height:1.6"><strong>${esc(data.customer_name)}</strong> · ${esc(data.email)}<br>Trimisă pe ${esc(when)}</p>
+${reason}
+<p style="margin:16px 0 6px;font-size:14px;font-weight:bold">Produsele returnate</p>
+<ul style="margin:0;padding-left:20px;font-size:14px;line-height:1.5">${withdrawalItemsList(data)}</ul>
+${iban}
+<p style="margin:16px 0 0;font-size:13px;line-height:1.5;color:${MUTED}">${esc(data.statement)}</p>
+${button(link, "Deschide comanda în admin")}`;
+
+    const text = [
+        `Cerere de retragere · comanda #${n}`,
+        `${data.customer_name}, ${data.email}`,
+        `Trimisă pe ${when}`,
+        data.reason ? `Motivul clientului: ${data.reason}` : "",
+        "",
+        ...data.items.map((item) => `${item.quantity} × ${item.product_name} (${item.size_label})`),
+        "",
+        `Deschide în admin: ${link}`,
+    ].join("\n");
+
+    return {
+        from: config.from,
+        to: config.shopEmail,
+        replyTo: data.email, // apeși „Răspunde” și îi scrii direct clientului
+        subject: `Cerere de retragere · comanda #${n}`,
+        text,
+        html: layout(`Cerere de retragere de la ${data.customer_name}`, body, config),
+    };
+}
+
+// Mailul pentru tine pleacă primul, ca la comenzi: dacă trebuie reîncercat,
+// doar tu ai putea primi ceva de două ori, niciodată clientul
+export function buildWithdrawalEmails(data, config) {
+    return [shopWithdrawalEmail(data, config), customerWithdrawalEmail(data, config)];
 }

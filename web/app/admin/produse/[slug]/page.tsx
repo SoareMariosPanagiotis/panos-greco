@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { DeleteProductForm } from "@/components/admin/delete-product-form";
 import { NewVariantForm } from "@/components/admin/new-variant-form";
 import { ProductDetailsForm } from "@/components/admin/product-details-form";
+import { ProductLabelForm } from "@/components/admin/product-label-form";
 import { VariantEditRow, type AdminVariant } from "@/components/admin/variant-edit-row";
 import { gql } from "@/lib/catalog";
 import { requireAdmin } from "@/lib/auth";
@@ -20,7 +21,35 @@ type AdminProduct = {
     categoryId: string;
     categoryByCategoryId: { name: string } | null;
     productVariantsByProductId: { nodes: AdminVariant[] };
+    // Eticheta (migrația 025)
+    ingredients: string | null;
+    mayContain: string | null;
+    storage: string | null;
+    usageNotes: string | null;
+    origin: string | null;
+    producer: string | null;
+    organicCode: string | null;
+    labelNotes: string | null;
+    productNutritionByProductId: Nutrition | null;
 };
+
+type Nutrition = {
+    basis: string;
+    energyKj: string;
+    energyKcal: string;
+    fat: string;
+    saturates: string;
+    carbohydrate: string;
+    sugars: string;
+    fibre: string | null;
+    protein: string;
+    salt: string;
+};
+
+// Postgres trimite „91.60”; în formular e mai curat „91.6”
+function plain(value: string | null | undefined) {
+    return value === null || value === undefined ? "" : String(Number(value));
+}
 
 type Category = { id: string; name: string };
 
@@ -38,6 +67,10 @@ const query = `
       categoryByCategoryId { name }
       productVariantsByProductId(orderBy: PACK_SIZE_ASC) {
         nodes { id packSize packUnit price stock barcode }
+      }
+      ingredients mayContain storage usageNotes origin producer organicCode labelNotes
+      productNutritionByProductId {
+        basis energyKj energyKcal fat saturates carbohydrate sugars fibre protein salt
       }
     }
     allCategories(orderBy: SORT_ORDER_ASC) {
@@ -58,6 +91,7 @@ async function ProductEditor({ params }: { params: Promise<{ slug: string }> }) 
     if (!product) notFound();
 
     const variants = product.productVariantsByProductId.nodes;
+    const nutrition = product.productNutritionByProductId;
 
     return (
         <>
@@ -112,6 +146,37 @@ async function ProductEditor({ params }: { params: Promise<{ slug: string }> }) 
                 ))}
             </div>
             <NewVariantForm productId={product.id} />
+
+            <h2 className="mt-10 font-semibold">Eticheta</h2>
+            <p className="mt-1 text-sm text-neutral-500">
+                La vânzarea online, clientul trebuie să vadă înainte să cumpere tot ce e obligatoriu pe etichetă (în
+                afară de data expirării). Copiază de pe etichetă; câmpurile goale nu apar pe site.
+            </p>
+            <div className="mt-3">
+                <ProductLabelForm
+                    productId={product.id}
+                    initial={{
+                        ingredients: product.ingredients ?? "",
+                        mayContain: product.mayContain ?? "",
+                        storage: product.storage ?? "",
+                        usageNotes: product.usageNotes ?? "",
+                        origin: product.origin ?? "",
+                        producer: product.producer ?? "",
+                        organicCode: product.organicCode ?? "",
+                        labelNotes: product.labelNotes ?? "",
+                        basis: nutrition?.basis ?? "100 g",
+                        energyKj: plain(nutrition?.energyKj),
+                        energyKcal: plain(nutrition?.energyKcal),
+                        fat: plain(nutrition?.fat),
+                        saturates: plain(nutrition?.saturates),
+                        carbohydrate: plain(nutrition?.carbohydrate),
+                        sugars: plain(nutrition?.sugars),
+                        fibre: plain(nutrition?.fibre),
+                        protein: plain(nutrition?.protein),
+                        salt: plain(nutrition?.salt),
+                    }}
+                />
+            </div>
 
             <div className="mt-16">
                 <DeleteProductForm productId={product.id} productName={product.name} />

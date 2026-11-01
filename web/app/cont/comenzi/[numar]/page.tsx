@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import {
     ORDER_VIEW_FIELDS,
     ORDER_VIEW_ITEM_FIELDS,
+    ORDER_WITHDRAWAL_FIELDS,
     OrderView,
     type OrderHistoryEntry,
     type OrderViewData,
@@ -18,20 +19,28 @@ export const metadata: Metadata = {
 };
 
 type MyOrder = OrderViewData & {
+    id: string;
+    canWithdraw: boolean;
+    withdrawalDeadline: string | null;
     orderItemsByOrderId: { nodes: OrderViewItem[] };
     orderStatusHistoriesByOrderId: { nodes: OrderHistoryEntry[] };
+    withdrawalsByOrderId: { nodes: { id: string; createdAt: string; status: string }[] };
 };
 
-// Comanda, produsele și istoricul, într-o singură cerere
+// Comanda, produsele, istoricul și cererile de retragere, într-o singură cerere
 const query = `
   query MyOrder($number: Int!) {
     orderByOrderNumber(orderNumber: $number) {
       ${ORDER_VIEW_FIELDS}
+      ${ORDER_WITHDRAWAL_FIELDS}
       orderItemsByOrderId(orderBy: PRODUCT_NAME_ASC) {
         nodes { ${ORDER_VIEW_ITEM_FIELDS} }
       }
       orderStatusHistoriesByOrderId(orderBy: CREATED_AT_ASC) {
         nodes { id status createdAt }
+      }
+      withdrawalsByOrderId(orderBy: CREATED_AT_ASC) {
+        nodes { id createdAt status }
       }
     }
   }
@@ -61,6 +70,12 @@ async function MyOrderView({ params }: { params: Promise<{ numar: string }> }) {
             items={order.orderItemsByOrderId.nodes}
             place="account"
             history={order.orderStatusHistoriesByOrderId.nodes}
+            withdrawal={{
+                orderId: order.id,
+                canWithdraw: order.canWithdraw,
+                deadline: order.withdrawalDeadline,
+                requests: order.withdrawalsByOrderId.nodes,
+            }}
         />
     );
 }

@@ -1,11 +1,12 @@
 // Poștașul: la fiecare câteva secunde ia mailurile din coadă și le trimite.
-// Două cozi, aceeași regulă: poștașul nu atinge tabelele direct, doar funcțiile din schema mailer.
+// Trei cozi, aceeași regulă: poștașul nu atinge tabelele direct, doar funcțiile din schema mailer.
 //   - comenzile: rândurile din sales.order_status_history cu notified_at gol
 //   - contul: linkurile pentru parolă uitată și confirmarea emailului (migrația 022)
+//   - retragerile: confirmarea de primire a cererii de retragere (migrația 024)
 
 import pg from "pg";
 import * as nodemailerModule from "nodemailer";
-import { buildAccountEmail, buildEmails } from "./templates.mjs";
+import { buildAccountEmail, buildEmails, buildWithdrawalEmails } from "./templates.mjs";
 
 // Merge și cu versiunile vechi, și cu cele noi ale bibliotecii
 const nodemailer = nodemailerModule.default ?? nodemailerModule;
@@ -78,10 +79,32 @@ async function deliverAccountEmails() {
     }
 }
 
+// O tură pentru retrageri: confirmarea pentru client și notificarea pentru tine
+async function deliverWithdrawalEmails() {
+    const { rows } = await pool.query("select * from mailer.claim_withdrawal_emails(10)");
+
+    for (const row of rows) {
+        const data = row.data;
+        const emails = buildWithdrawalEmails(data, config);
+        try {
+            for (const email of emails) {
+                await transport.sendMail(email);
+            }
+            await pool.query("select mailer.complete_withdrawal_email($1)", [row.withdrawal_id]);
+            console.log(`✓ retragere #${data.order.order_number}: ${emails.length} mail(uri) trimise`);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            await pool.query("select mailer.fail_withdrawal_email($1, $2)", [row.withdrawal_id, message]);
+            console.error(`✗ retragere #${data.order.order_number}: ${message}. Reîncerc mai târziu.`);
+        }
+    }
+}
+
 async function loop() {
     try {
         await deliver();
         await deliverAccountEmails();
+        await deliverWithdrawalEmails();
     } catch (error) {
         // De exemplu, baza de date nu răspunde: încercăm din nou la tura următoare
         console.error("Tura a eșuat:", error instanceof Error ? error.message : error);

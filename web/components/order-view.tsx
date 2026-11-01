@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { CircleCheck, CircleX, PackageCheck, Store, Truck } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { formatPrice } from "@/lib/catalog";
 import { formatOrderDate, statusLabel } from "@/lib/orders";
+import { WITHDRAW_LABEL, formatDeadline, formatRequestTime, withdrawalStatusLabel } from "@/lib/withdrawals";
 
 // O comandă așa cum o vede clientul. Aceeași componentă, două pagini:
 //   receipt → /comanda/confirmare/[id]  linkul din mail, merge și fără cont
@@ -53,6 +55,17 @@ export const ORDER_VIEW_FIELDS = `
   subtotal discountTotal shippingTotal paymentFee total createdAt
 `;
 export const ORDER_VIEW_ITEM_FIELDS = `id productName sizeLabel unitPrice quantity lineTotal`;
+
+// Retragerea din contract (migrația 024): canWithdraw și withdrawalDeadline sunt câmpuri
+// calculate de baza de date pentru fiecare comandă
+export const ORDER_WITHDRAWAL_FIELDS = `id canWithdraw withdrawalDeadline`;
+
+export type OrderWithdrawalInfo = {
+    orderId: string;
+    canWithdraw: boolean;
+    deadline: string | null; // null = comanda nu e livrată încă
+    requests?: { id: string; createdAt: string; status: string }[]; // doar în cont
+};
 
 // Pașii din istoric, spuși pe limba clientului
 const STEP_LABELS: Record<string, string> = {
@@ -123,6 +136,43 @@ function statusHero(order: OrderViewData, place: OrderPlace) {
     }
 }
 
+// Butonul cerut de lege, cât timp clientul se mai poate retrage, plus cererile trimise deja
+function WithdrawalBox({ info }: { info: OrderWithdrawalInfo }) {
+    const requests = info.requests ?? [];
+    if (!info.canWithdraw && requests.length === 0) return null;
+
+    return (
+        <section className="rounded-xl border bg-white p-6 text-sm">
+            <h2 className="font-semibold">Retragerea din contract</h2>
+            {requests.length > 0 && (
+                <ul className="mt-3 space-y-1 text-neutral-700">
+                    {requests.map((request) => (
+                        <li key={request.id}>
+                            Cerere trimisă pe {formatRequestTime(request.createdAt)} ·{" "}
+                            <span className="font-medium">{withdrawalStatusLabel(request.status)}</span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+            {info.canWithdraw && (
+                <>
+                    <p className="mt-2 text-neutral-600">
+                        {info.deadline
+                            ? `Te poți retrage din contract până pe ${formatDeadline(info.deadline)}, fără să ne spui motivul.`
+                            : "Te poți retrage din contract oricând până la livrare și încă 14 zile după, fără să ne spui motivul."}
+                    </p>
+                    <Link
+                        href={`/retragere/${info.orderId}`}
+                        className={buttonVariants({ variant: "outline", className: "mt-3" })}
+                    >
+                        {WITHDRAW_LABEL}
+                    </Link>
+                </>
+            )}
+        </section>
+    );
+}
+
 // Linkul de jos: din cont te întorci în cont, din mail la produse
 const BACK_LINKS = {
     receipt: { href: "/", label: "Înapoi la produse" },
@@ -134,9 +184,10 @@ type OrderViewProps = {
     items: OrderViewItem[];
     place: OrderPlace;
     history?: OrderHistoryEntry[]; // pașii comenzii, doar în cont
+    withdrawal?: OrderWithdrawalInfo; // butonul „Retrageți-vă din contract aici”
 };
 
-export function OrderView({ order, items, place, history }: OrderViewProps) {
+export function OrderView({ order, items, place, history, withdrawal }: OrderViewProps) {
     const hero = statusHero(order, place);
     const back = BACK_LINKS[place];
     const date = new Date(order.createdAt).toLocaleString("ro-RO", {
@@ -190,6 +241,8 @@ export function OrderView({ order, items, place, history }: OrderViewProps) {
                             </div>
                         </dl>
                     </section>
+
+                    {withdrawal && <WithdrawalBox info={withdrawal} />}
 
                     {/* Istoricul: rândurile scrise de trigger-ul log_status_change */}
                     {history && history.length > 0 && (

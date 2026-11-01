@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { requireAdmin } from "@/lib/auth";
 import { gql } from "@/lib/catalog";
 import { pluralRo } from "@/lib/orders";
+import { SHOP_INFO_FIELDS, missingShopInfo, type ShopInfo } from "@/lib/shop-info";
 
 const sections = [
     { href: "/admin/produse", title: "Produse", text: "Detalii, prețuri și stoc." },
@@ -12,17 +13,42 @@ const sections = [
     { href: "/admin/livrare", title: "Livrare și plată", text: "Prețuri, livrare gratuită, metode active." },
 ];
 
-// Doar numărul comenzilor noi, nu toate datele lor
-const newOrdersQuery = `
-  query NewOrdersCount {
+// Doar numerele care te interesează: comenzi noi, cereri de retragere noi și ce lipsește din datele firmei
+const dashboardQuery = `
+  query AdminDashboard {
     allOrders(condition: { status: "new" }) { totalCount }
+    allWithdrawals(condition: { status: "received" }) { totalCount }
+    shopInfoById(id: true) { ${SHOP_INFO_FIELDS} }
   }
 `;
 
+type DashboardData = {
+    allOrders: { totalCount: number };
+    allWithdrawals: { totalCount: number };
+    shopInfoById: ShopInfo | null;
+};
+
+// Un card care te cheamă (galben) când ai ceva de făcut
+function AttentionCard({ href, title, text, attention }: { href: string; title: string; text: string; attention: boolean }) {
+    return (
+        <Link
+            href={href}
+            className={`rounded-xl border bg-white p-6 transition hover:border-olive hover:shadow-md ${
+                attention ? "border-amber-400" : ""
+            }`}
+        >
+            <h2 className="text-lg font-semibold text-olive">{title}</h2>
+            <p className={`mt-1 text-sm ${attention ? "font-medium text-amber-700" : "text-neutral-600"}`}>{text}</p>
+        </Link>
+    );
+}
+
 async function AdminDashboard() {
     const { user, token } = await requireAdmin();
-    const data = await gql<{ allOrders: { totalCount: number } }>(newOrdersQuery, {}, token);
+    const data = await gql<DashboardData>(dashboardQuery, {}, token);
     const newOrders = data.allOrders.totalCount;
+    const newWithdrawals = data.allWithdrawals.totalCount;
+    const missing = data.shopInfoById ? missingShopInfo(data.shopInfoById) : ["toate datele"];
 
     return (
         <>
@@ -42,19 +68,27 @@ async function AdminDashboard() {
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {/* Comenzile sunt primele: aici te uiți în fiecare zi */}
-                <Link
+                <AttentionCard
                     href={newOrders > 0 ? "/admin/comenzi?stare=new" : "/admin/comenzi"}
-                    className={`rounded-xl border bg-white p-6 transition hover:border-olive hover:shadow-md ${
-                        newOrders > 0 ? "border-amber-400" : ""
-                    }`}
-                >
-                    <h2 className="text-lg font-semibold text-olive">Comenzi</h2>
-                    <p className={`mt-1 text-sm ${newOrders > 0 ? "font-medium text-amber-700" : "text-neutral-600"}`}>
-                        {newOrders > 0
+                    title="Comenzi"
+                    text={
+                        newOrders > 0
                             ? `${pluralRo(newOrders, "comandă nouă", "comenzi noi")} te așteaptă`
-                            : "Nicio comandă nouă."}
-                    </p>
-                </Link>
+                            : "Nicio comandă nouă."
+                    }
+                    attention={newOrders > 0}
+                />
+
+                <AttentionCard
+                    href="/admin/retrageri"
+                    title="Retrageri"
+                    text={
+                        newWithdrawals > 0
+                            ? `${pluralRo(newWithdrawals, "cerere nouă", "cereri noi")} de retragere`
+                            : "Nicio cerere nouă de retragere."
+                    }
+                    attention={newWithdrawals > 0}
+                />
 
                 {sections.map((section) => (
                     <Link
@@ -66,6 +100,13 @@ async function AdminDashboard() {
                         <p className="mt-1 text-sm text-neutral-600">{section.text}</p>
                     </Link>
                 ))}
+
+                <AttentionCard
+                    href="/admin/firma"
+                    title="Datele firmei"
+                    text={missing.length > 0 ? `Mai lipsesc: ${missing.join(", ")}.` : "Apar în subsol și la Contact."}
+                    attention={missing.length > 0}
+                />
             </div>
         </>
     );
