@@ -78,7 +78,22 @@ function customerMessage(status, order) {
 
 // ---------- Bucăți de HTML ----------
 
-function layout(preheader, body) {
+// Antetul, ca pe site: sigla și numele „Panos Greco” scris cu literele din logo.
+// Imaginile sunt PNG, pentru că Gmail și Outlook nu afișează SVG. Vin de pe site (web/public/email).
+// Dacă programul de mail blochează imaginile, rămâne textul alternativ, alb pe verde.
+function header(siteUrl) {
+    const site = esc(siteUrl);
+    const img = "display:block;border:0;outline:none;text-decoration:none";
+    // Sigla „atârnă” de marginea de sus, ca în bara site-ului
+    return `<tr><td style="background:${OLIVE};padding:0 28px 14px">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="vertical-align:top;padding-right:14px"><a href="${site}"><img src="${site}/email/logo.png" width="77" height="64" alt="" style="${img}"></a></td>
+<td style="vertical-align:middle"><a href="${site}" style="color:#ffffff;text-decoration:none"><img src="${site}/email/logo-text.png" width="128" height="26" alt="Panos Greco" style="${img};color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:26px;font-weight:bold"></a></td>
+</tr></table>
+</td></tr>`;
+}
+
+function layout(preheader, body, config) {
     return `<!doctype html>
 <html lang="ro">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>
@@ -87,7 +102,7 @@ function layout(preheader, body) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${OLIVE_LIGHT};padding:24px 12px">
 <tr><td align="center">
 <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden">
-<tr><td style="background:${OLIVE};padding:20px 28px;color:#ffffff;font-size:22px;font-weight:bold">Panos Greco</td></tr>
+${header(config.siteUrl)}
 <tr><td style="padding:28px">${body}</td></tr>
 <tr><td style="padding:16px 28px;background:#fafaf7;color:${MUTED};font-size:12px;line-height:1.5">
 Panos Greco · Ulei de măsline extravirgin bio, din livada proprie<br>Ai întrebări? Răspunde la acest mail.
@@ -188,7 +203,7 @@ ${button(link, `Vezi comanda #${order.order_number}`)}`;
         replyTo: config.shopEmail, // răspunsurile clientului ajung la tine
         subject: message.subject,
         text,
-        html: layout(message.subject, body),
+        html: layout(message.subject, body, config),
     };
 }
 
@@ -224,7 +239,7 @@ ${button(link, "Deschide comanda în admin")}`;
         replyTo: order.email, // apeși „Răspunde” și îi scrii direct clientului
         subject: `Comandă nouă #${order.order_number} · ${lei(order.total)}`,
         text,
-        html: layout(`Comandă nouă de la ${order.customer_name}`, body),
+        html: layout(`Comandă nouă de la ${order.customer_name}`, body, config),
     };
 }
 
@@ -238,4 +253,62 @@ export function buildEmails(status, order, config) {
     if (status === "new") emails.push(shopEmail(order, config));
     emails.push(customerEmail(status, message, order, config));
     return emails;
+}
+// ---------- Mailurile contului: parolă uitată și confirmarea emailului ----------
+
+// Linkul din mail duce la o pagină de pe site; tokenul e cheia de unică folosință
+function accountMessage(purpose, firstName, link) {
+    const hello = firstName ? `Bună, ${firstName}!` : "Bună!";
+
+    if (purpose === "reset_password") {
+        return {
+            subject: "Alege o parolă nouă pentru contul Panos Greco",
+            title: "Parolă nouă",
+            lines: [
+                hello,
+                "Am primit o cerere pentru o parolă nouă la contul tău. Apasă butonul de mai jos și alege-o.",
+                "Linkul e valabil o oră și merge o singură dată.",
+                "Dacă nu tu ai cerut asta, ignoră mailul: parola ta rămâne aceeași.",
+            ],
+            button: "Alege parola nouă",
+            link,
+        };
+    }
+    if (purpose === "verify_email") {
+        return {
+            subject: "Confirmă adresa de email",
+            title: "Bun venit la Panos Greco!",
+            lines: [
+                hello,
+                "Mai e un singur pas: confirmă că aceasta e adresa ta de email.",
+                "Comenzile pe care le-ai plasat fără cont, cu această adresă, apar apoi singure în contul tău.",
+                "Linkul e valabil 48 de ore.",
+            ],
+            button: "Confirmă emailul",
+            link,
+        };
+    }
+    return null; // un fel de mail necunoscut: nu trimitem nimic
+}
+
+export function buildAccountEmail(row, config) {
+    const page = row.purpose === "reset_password" ? "/cont/parola-noua" : "/cont/confirma-email";
+    const link = `${config.siteUrl}${page}?token=${encodeURIComponent(row.token)}`;
+    const message = accountMessage(row.purpose, row.first_name, link);
+    if (!message) return null;
+
+    // Linkul lung (tokenul are 64 de caractere) se poate rupe oriunde, ca să nu iasă din ecran pe telefon
+    const body = `<h1 style="margin:0 0 12px;font-size:22px;color:${OLIVE}">${esc(message.title)}</h1>
+${message.lines.map((line) => `<p style="margin:0 0 8px;font-size:15px;line-height:1.5">${esc(line)}</p>`).join("")}
+${button(message.link, message.button)}
+<p style="margin:20px 0 0;font-size:12px;line-height:1.5;color:${MUTED}">Dacă butonul nu merge, copiază linkul în browser:<br><span style="word-break:break-all">${esc(message.link)}</span></p>`;
+
+    return {
+        from: config.from,
+        to: row.email,
+        replyTo: config.shopEmail,
+        subject: message.subject,
+        text: [...message.lines, "", `${message.button}: ${message.link}`].join("\n"),
+        html: layout(message.subject, body, config),
+    };
 }

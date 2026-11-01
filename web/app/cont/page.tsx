@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { logout } from "@/app/cont/actions";
+import { VerifyEmailNotice } from "@/components/account/verify-email-notice";
 import { OrderStatusBadge } from "@/components/order-status-badge";
 import { Button } from "@/components/ui/button";
 import { requireCustomer } from "@/lib/auth";
@@ -67,6 +68,8 @@ async function AccountOverview() {
                     </Button>
                 </form>
             </div>
+
+            {!user.emailVerifiedAt && <VerifyEmailNotice email={user.email} />}
 
             <div className="mt-8 grid gap-6 sm:grid-cols-2">
                 <section className="rounded-xl border bg-white p-6">

@@ -114,7 +114,11 @@ function PasswordStep({ state, formAction, pending }: StepProps) {
             <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
                     <Label htmlFor="password">Parolă</Label>
-                    <Link href="/cont/parola-uitata" className="text-sm text-olive hover:underline">
+                    <Link
+                        // Emailul merge mai departe, ca să nu-l mai scrie o dată
+                        href={`/cont/parola-uitata?email=${encodeURIComponent(state.email)}`}
+                        className="text-sm text-olive hover:underline"
+                    >
                         Ai uitat parola?
                     </Link>
                 </div>

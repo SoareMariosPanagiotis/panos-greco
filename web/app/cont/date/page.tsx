@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ChangePasswordForm } from "@/components/account/change-password-form";
 import { ProfileForm } from "@/components/account/profile-form";
 import { requireCustomer } from "@/lib/auth";
 
@@ -13,12 +14,15 @@ async function ProfileLoader() {
     const { user } = await requireCustomer();
 
     return (
-        <ProfileForm
-            email={user.email}
-            lastName={user.lastName ?? ""}
-            firstName={user.firstName ?? ""}
-            phone={user.phone ?? ""}
-        />
+        <>
+            <ProfileForm
+                email={user.email}
+                lastName={user.lastName ?? ""}
+                firstName={user.firstName ?? ""}
+                phone={user.phone ?? ""}
+            />
+            <ChangePasswordForm email={user.email} />
+        </>
     );
 }
 
