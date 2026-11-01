@@ -212,7 +212,7 @@ export type CompanyLookup =
     | { status: "found"; company: Company }
     | { status: "invalid" | "not-found" | "error"; message: string };
 
-// Butonul „Caută la ANAF” de la Facturare
+// Butonul „Caută” de la Facturare: datele firmei, din registrul fiscal (ANAF)
 export async function lookupCompany(cui: string): Promise<CompanyLookup> {
     const digits = cuiDigits(String(cui));
     if (!isValidCui(digits)) {
@@ -223,13 +223,13 @@ export async function lookupCompany(cui: string): Promise<CompanyLookup> {
         const company = await findCompany(digits);
         return company
             ? { status: "found", company }
-            : { status: "not-found", message: "ANAF nu are o firmă cu acest CUI. Verifică cifrele." };
+            : { status: "not-found", message: "Nu am găsit nicio firmă cu acest CUI. Verifică cifrele." };
     } catch (error) {
         // Clientul vede un mesaj simplu; motivul tehnic rămâne în jurnalul serverului
         console.error("Căutarea la ANAF a eșuat:", error);
         return {
             status: "error",
-            message: "ANAF nu răspunde acum. Completează datele firmei de mână.",
+            message: "Nu am putut prelua datele firmei acum. Completează-le mai jos.",
         };
     }
 }

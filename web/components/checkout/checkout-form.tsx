@@ -385,7 +385,7 @@ export function CheckoutForm({ deliveryOptions, paymentOptions, account }: Props
                         />
                         Vreau factură pe firmă
                     </label>
-                    {/* CUI → „Caută la ANAF” → numele, Nr. Reg. Com. și adresa sediului se completează singure */}
+                    {/* Întâi doar CUI-ul; după „Caută” apar numele, adresa sediului și Nr. Reg. Com., completate singure */}
                     {wantsInvoice && <CompanyFields defaults={values} />}
                 </Section>
 
