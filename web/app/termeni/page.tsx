@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalList, LegalPage, LegalSection, companySentence, legalLink } from "@/components/legal/legal-page";
 import { getShopInfo } from "@/lib/shop-info";
-import { WITHDRAW_LABEL } from "@/lib/withdrawals";
+import { RETURN_BUTTON_LABEL, RETURN_FORM_LABEL, RETURN_FORM_PATH } from "@/lib/withdrawals";
 
 export const metadata: Metadata = {
     title: "Termeni și condiții · Panos Greco",
@@ -89,16 +89,16 @@ async function Terms() {
                 </LegalList>
             </LegalSection>
 
-            <LegalSection title="6. Dreptul de retragere">
+            <LegalSection title="6. Dreptul de retur (retragerea din contract)">
                 <p>
-                    Ca și consumator, te poți retrage din contract în 14 zile de la primirea produselor, fără să ne spui
-                    motivul, folosind butonul{" "}
-                    <Link href="/retragere" className={legalLink}>
-                        {WITHDRAW_LABEL}
+                    Ca și consumator, poți returna produsele în 14 zile de la primire, fără să ne spui motivul. În
+                    limbajul legii, asta se numește retragere din contract. Ceri returul din{" "}
+                    <Link href={RETURN_FORM_PATH} className={legalLink}>
+                        {RETURN_FORM_LABEL}
                     </Link>{" "}
-                    din subsolul site-ului, din contul tău sau din mailurile noastre. Costul transportului pentru retur
-                    e al tău. Alimentele desigilate după livrare nu pot fi returnate, din motive de igienă. Toate
-                    detaliile sunt în{" "}
+                    (în subsolul site-ului), cu butonul „{RETURN_BUTTON_LABEL}” din contul tău sau din mailurile
+                    noastre. Costul transportului pentru retur e al tău. Alimentele desigilate după livrare nu pot fi
+                    returnate, din motive de igienă. Toate detaliile sunt în{" "}
                     <Link href="/retur" className={legalLink}>
                         Politica de retur
                     </Link>

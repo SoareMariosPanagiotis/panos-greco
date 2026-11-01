@@ -3,9 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { gql } from "@/lib/catalog";
-import { isValidIban, normalizeIban, parseJson } from "@/lib/withdrawals";
+import { RETURN_FORM_PATH, isValidIban, normalizeIban, parseJson } from "@/lib/withdrawals";
 
-// Retragerea din contract (migrația 024): găsirea comenzii fără cont și butonul „Confirmați retragerea”
+// Formularul de retur = retragerea din contract (migrația 024): găsirea comenzii fără cont și butonul de confirmare
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -66,10 +66,10 @@ export async function findOrderForWithdrawal(_previous: FindOrderState, formData
         };
     }
     // În afara lui try: redirect() funcționează aruncând o „eroare” specială, pe care n-o prindem
-    redirect(`/retragere/${orderId}`);
+    redirect(`${RETURN_FORM_PATH}/${orderId}`);
 }
 
-// ---------- „Confirmați retragerea” ----------
+// ---------- „Confirmă returul” ----------
 
 export type WithdrawalValues = {
     customerName: string;

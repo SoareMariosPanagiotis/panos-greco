@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { OrderActions } from "@/components/admin/order-actions";
-import { WithdrawalActions } from "@/components/admin/withdrawal-actions";
+import { ReturnActions } from "@/components/admin/return-actions";
 import { OrderStatusBadge } from "@/components/order-status-badge";
 import { requireAdmin } from "@/lib/auth";
 import { formatPrice, gql } from "@/lib/catalog";
@@ -26,7 +26,7 @@ type OrderItem = {
 
 type HistoryEntry = { id: string; status: string; createdAt: string };
 
-// O cerere de retragere (migrația 024), cu produsele ei
+// O cerere de retur (tabelul sales.withdrawals, migrația 024), cu produsele ei
 type Withdrawal = {
     id: string;
     createdAt: string;
@@ -108,13 +108,13 @@ const query = `
   }
 `;
 
-// Cererile de retragere ale comenzii: ce returnează clientul și ce ai de făcut
+// Cererile de retur ale comenzii: ce returnează clientul și ce ai de făcut
 function WithdrawalsSection({ withdrawals, deadline }: { withdrawals: Withdrawal[]; deadline: string | null }) {
     const waiting = withdrawals.some((w) => w.status === "received");
 
     return (
         <section className={`rounded-xl border bg-white p-6 ${waiting ? "border-amber-400" : ""}`}>
-            <h2 className="font-semibold">Retragere din contract</h2>
+            <h2 className="font-semibold">Retur</h2>
             {deadline && <p className="mt-1 text-xs text-neutral-500">Termen: {formatDeadline(deadline)}</p>}
 
             <div className="mt-4 space-y-6">
@@ -162,7 +162,7 @@ function WithdrawalsSection({ withdrawals, deadline }: { withdrawals: Withdrawal
                             <p className="mt-2 text-neutral-700">{withdrawal.statement}</p>
                         </details>
 
-                        <WithdrawalActions id={withdrawal.id} status={withdrawal.status} adminNote={withdrawal.adminNote} />
+                        <ReturnActions id={withdrawal.id} status={withdrawal.status} adminNote={withdrawal.adminNote} />
                     </article>
                 ))}
             </div>

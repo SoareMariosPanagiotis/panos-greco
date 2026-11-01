@@ -1,20 +1,22 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
-import { FindOrderForm } from "@/components/withdrawal/find-order-form";
+import { FindOrderForm } from "@/components/returns/find-order-form";
+import { ReturnButton } from "@/components/returns/return-button";
+import { ReturnSteps } from "@/components/returns/return-steps";
 import { getSession } from "@/lib/auth";
 import { gql } from "@/lib/catalog";
 import { formatOrderDate, statusLabel } from "@/lib/orders";
 import { getShopInfo } from "@/lib/shop-info";
-import { WITHDRAW_LABEL, formatDeadline } from "@/lib/withdrawals";
+import { formatDeadline } from "@/lib/withdrawals";
 
 export const metadata: Metadata = {
-    title: "Retragerea din contract · Panos Greco",
+    title: "Formular de retur · Panos Greco",
+    description: "Returnează produsele în 14 zile de la primire, fără să ne spui de ce.",
 };
 
-// Pagina din subsol, „Retrageți-vă din contract aici”: de aici clientul își alege comanda.
-// Cu cont: îi arătăm comenzile din care se mai poate retrage. Fără cont: număr + email.
+// Formularul de retur: aici duce linkul „Formular de retur” din subsol. De aici clientul își alege comanda.
+// Cu cont: îi arătăm comenzile pe care le mai poate returna. Fără cont: numărul comenzii + emailul.
 
 type MyOrder = {
     id: string;
@@ -27,7 +29,7 @@ type MyOrder = {
 
 // RLS îi dă clientului doar comenzile lui
 const myOrdersQuery = `
-  query MyOrdersForWithdrawal {
+  query MyOrdersForReturn {
     allOrders(orderBy: CREATED_AT_DESC, first: 20) {
       nodes { id orderNumber status createdAt canWithdraw withdrawalDeadline }
     }
@@ -46,8 +48,8 @@ async function MyOrders() {
             <h2 className="text-lg font-semibold">Comenzile tale</h2>
             {orders.length === 0 ? (
                 <p className="mt-2 text-sm text-neutral-600">
-                    Nu ai comenzi din care să te mai poți retrage. Dacă ai comandat fără cont sau cu alt email,
-                    folosește formularul de mai jos.
+                    Nu ai comenzi pe care să le mai poți returna. Dacă ai comandat fără cont sau cu alt email, caută
+                    comanda mai jos.
                 </p>
             ) : (
                 <ul className="mt-3 divide-y">
@@ -62,13 +64,11 @@ async function MyOrders() {
                                 </p>
                                 <p className="text-neutral-600">
                                     {order.withdrawalDeadline
-                                        ? `Te poți retrage până pe ${formatDeadline(order.withdrawalDeadline)}.`
-                                        : "Nu ai primit-o încă: te poți retrage oricând până la livrare și încă 14 zile după."}
+                                        ? `Poți returna produsele până pe ${formatDeadline(order.withdrawalDeadline)}.`
+                                        : "Nu ai primit-o încă: poți renunța oricând până la livrare și încă 14 zile după."}
                                 </p>
                             </div>
-                            <Link href={`/retragere/${order.id}`} className={buttonVariants({ variant: "outline" })}>
-                                {WITHDRAW_LABEL}
-                            </Link>
+                            <ReturnButton orderId={order.id} />
                         </li>
                     ))}
                 </ul>
@@ -81,7 +81,7 @@ async function OtherWays() {
     const shop = await getShopInfo();
     return (
         <p className="text-sm text-neutral-600">
-            Poți trimite cererea și pe email, la{" "}
+            Poți cere returul și pe email, la{" "}
             <a href={`mailto:${shop.email}`} className="text-olive underline">
                 {shop.email}
             </a>
@@ -94,35 +94,42 @@ async function OtherWays() {
     );
 }
 
-export default function WithdrawalStartPage() {
+export default function ReturnFormStartPage() {
     return (
-        <main className="mx-auto w-full max-w-3xl space-y-6 px-8 py-10">
-            <div>
-                <h1 className="text-3xl font-bold text-olive">Retragerea din contract</h1>
+        <main className="mx-auto w-full max-w-5xl space-y-8 px-8 py-10">
+            <div className="max-w-3xl">
+                <h1 className="text-3xl font-bold text-olive">Formular de retur</h1>
                 <p className="mt-3 text-neutral-700">
-                    Ai dreptul să te retragi din contract în 14 zile de la primirea produselor, fără să ne spui motivul.
-                    Până la livrare te poți retrage oricând. Alege comanda, confirmă produsele și primești imediat pe
-                    email confirmarea cererii.
+                    Ai 14 zile de la primire să returnezi produsele, fără să ne spui de ce. Până la livrare poți renunța
+                    oricând. Alegi comanda, bifezi produsele și primești imediat pe email confirmarea cererii.
+                </p>
+                <p className="mt-2 text-xs text-neutral-500">
+                    Returul în 14 zile este dreptul de retragere din contract (OUG 34/2014); formularul de aici e
+                    declarația ta de retragere.
                 </p>
             </div>
 
-            <Suspense fallback={null}>
-                <MyOrders />
-            </Suspense>
+            <ReturnSteps />
 
-            <section className="rounded-xl border bg-white p-6">
-                <h2 className="text-lg font-semibold">Găsește comanda</h2>
-                <p className="mt-1 text-sm text-neutral-600">
-                    Pentru comenzile plasate fără cont: numărul comenzii îl găsești în mailul de confirmare.
-                </p>
-                <div className="mt-4">
-                    <FindOrderForm />
-                </div>
-            </section>
+            <div className="max-w-3xl space-y-6">
+                <Suspense fallback={null}>
+                    <MyOrders />
+                </Suspense>
 
-            <Suspense fallback={null}>
-                <OtherWays />
-            </Suspense>
+                <section className="rounded-xl border bg-white p-6">
+                    <h2 className="text-lg font-semibold">Găsește comanda</h2>
+                    <p className="mt-1 text-sm text-neutral-600">
+                        Pentru comenzile plasate fără cont: numărul comenzii îl găsești în mailul de confirmare.
+                    </p>
+                    <div className="mt-4">
+                        <FindOrderForm />
+                    </div>
+                </section>
+
+                <Suspense fallback={null}>
+                    <OtherWays />
+                </Suspense>
+            </div>
         </main>
     );
 }

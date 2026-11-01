@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { legalLink } from "@/components/legal/legal-page";
 import { getShopInfo, phoneHref } from "@/lib/shop-info";
-import { WITHDRAW_LABEL } from "@/lib/withdrawals";
+import { RETURN_FORM_LABEL, RETURN_FORM_PATH } from "@/lib/withdrawals";
 
 export const metadata: Metadata = {
     title: "Contact · Panos Greco",
@@ -61,8 +61,8 @@ async function ContactDetails() {
                 <h2 className="text-lg font-semibold">Retururi și reclamații</h2>
                 <p className="mt-2 text-neutral-700">
                     Te-ai răzgândit? Ai 14 zile de la primire:{" "}
-                    <Link href="/retragere" className={legalLink}>
-                        {WITHDRAW_LABEL}
+                    <Link href={RETURN_FORM_PATH} className={legalLink}>
+                        {RETURN_FORM_LABEL}
                     </Link>
                     . Detalii în{" "}
                     <Link href="/retur" className={legalLink}>

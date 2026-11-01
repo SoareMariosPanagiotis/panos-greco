@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { CircleCheck, CircleX, PackageCheck, Store, Truck } from "lucide-react";
-import { buttonVariants } from "@/components/ui/button";
+import { ReturnButton } from "@/components/returns/return-button";
 import { formatPrice } from "@/lib/catalog";
 import { formatOrderDate, statusLabel } from "@/lib/orders";
-import { WITHDRAW_LABEL, formatDeadline, formatRequestTime, withdrawalStatusLabel } from "@/lib/withdrawals";
+import { formatDeadline, formatRequestTime, withdrawalStatusLabel } from "@/lib/withdrawals";
 
 // O comandă așa cum o vede clientul. Aceeași componentă, două pagini:
 //   receipt → /comanda/confirmare/[id]  linkul din mail, merge și fără cont
@@ -136,19 +136,19 @@ function statusHero(order: OrderViewData, place: OrderPlace) {
     }
 }
 
-// Butonul cerut de lege, cât timp clientul se mai poate retrage, plus cererile trimise deja
+// Butonul de retur (funcția de retragere cerută de lege), cât timp se mai poate, plus cererile trimise deja
 function WithdrawalBox({ info }: { info: OrderWithdrawalInfo }) {
     const requests = info.requests ?? [];
     if (!info.canWithdraw && requests.length === 0) return null;
 
     return (
         <section className="rounded-xl border bg-white p-6 text-sm">
-            <h2 className="font-semibold">Retragerea din contract</h2>
+            <h2 className="font-semibold">Retur</h2>
             {requests.length > 0 && (
                 <ul className="mt-3 space-y-1 text-neutral-700">
                     {requests.map((request) => (
                         <li key={request.id}>
-                            Cerere trimisă pe {formatRequestTime(request.createdAt)} ·{" "}
+                            Cerere de retur trimisă pe {formatRequestTime(request.createdAt)} ·{" "}
                             <span className="font-medium">{withdrawalStatusLabel(request.status)}</span>
                         </li>
                     ))}
@@ -158,15 +158,10 @@ function WithdrawalBox({ info }: { info: OrderWithdrawalInfo }) {
                 <>
                     <p className="mt-2 text-neutral-600">
                         {info.deadline
-                            ? `Te poți retrage din contract până pe ${formatDeadline(info.deadline)}, fără să ne spui motivul.`
-                            : "Te poți retrage din contract oricând până la livrare și încă 14 zile după, fără să ne spui motivul."}
+                            ? `Poți returna produsele până pe ${formatDeadline(info.deadline)}, fără să ne spui motivul.`
+                            : "Poți renunța oricând până la livrare și încă 14 zile după, fără să ne spui motivul."}
                     </p>
-                    <Link
-                        href={`/retragere/${info.orderId}`}
-                        className={buttonVariants({ variant: "outline", className: "mt-3" })}
-                    >
-                        {WITHDRAW_LABEL}
-                    </Link>
+                    <ReturnButton orderId={info.orderId} className="mt-3" />
                 </>
             )}
         </section>

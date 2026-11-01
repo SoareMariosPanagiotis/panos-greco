@@ -6,8 +6,9 @@ const OLIVE = "#5a6b2e"; // aceeași culoare ca pe site
 const OLIVE_LIGHT = "#f4f5ec";
 const MUTED = "#6b7280";
 
-// Eticheta cerută de lege pentru butonul de retragere (OUG 34/2014, modificată de OUG 18/2026)
-const WITHDRAW_LABEL = "Retrageți-vă din contract aici";
+// Linkul către formularul de retur (funcția de retragere din contract, OUG 18/2026).
+// Același text ca pe site: clienții caută „retur”.
+const RETURN_FORM_LABEL = "Formular de retur";
 
 // Ce a scris clientul (nume, adresă, notă) nu ajunge niciodată „crud” în HTML
 function esc(value) {
@@ -183,10 +184,10 @@ function button(href, label) {
     return `<p style="margin:24px 0 0"><a href="${esc(href)}" style="display:inline-block;background:${OLIVE};color:#ffffff;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:bold">${esc(label)}</a></p>`;
 }
 
-// Dreptul de retragere, amintit în mailul de confirmare și în cel de livrare.
-// Linkul duce direct la formularul comenzii (id-ul lung, greu de ghicit, ca la confirmare).
+// Dreptul de retur, amintit în mailul de confirmare și în cel de livrare.
+// Linkul duce direct la formularul de retur al comenzii (id-ul lung, greu de ghicit, ca la confirmare).
 function withdrawalLink(order, config) {
-    return `${config.siteUrl}/retragere/${order.id}`;
+    return `${config.siteUrl}/retur/formular/${order.id}`;
 }
 
 function withdrawalNote(status, order, config) {
@@ -194,10 +195,10 @@ function withdrawalNote(status, order, config) {
     const link = withdrawalLink(order, config);
     const intro =
         status === "new"
-            ? "Te poți retrage din contract în 14 zile de la primirea produselor, fără să ne spui motivul:"
-            : "Dacă te răzgândești, ai 14 zile de la primire ca să te retragi din contract, fără să ne spui motivul:";
+            ? "Poți returna produsele în 14 zile de la primire, fără să ne spui motivul:"
+            : "Te-ai răzgândit? Ai 14 zile de la primire să returnezi produsele, fără să ne spui motivul:";
     return `<p style="margin:20px 0 0;font-size:13px;line-height:1.6;color:${MUTED}">${intro}
-<a href="${esc(link)}" style="color:${OLIVE};font-weight:bold">${WITHDRAW_LABEL}</a>.
+<a href="${esc(link)}" style="color:${OLIVE};font-weight:bold">${RETURN_FORM_LABEL}</a>.
 Detalii în <a href="${esc(config.siteUrl)}/termeni" style="color:${OLIVE}">Termeni și condiții</a>
 și în <a href="${esc(config.siteUrl)}/retur" style="color:${OLIVE}">Politica de retur</a>.</p>`;
 }
@@ -232,7 +233,7 @@ ${withdrawalNote(status, order, config)}`;
         showItems ? itemsText(order) : "",
         `Vezi comanda: ${link}`,
         status === "new" || status === "delivered"
-            ? `\nTe poți retrage din contract în 14 zile de la primire, fără să ne spui motivul: ${withdrawalLink(order, config)}`
+            ? `\nPoți returna produsele în 14 zile de la primire, fără să ne spui motivul. ${RETURN_FORM_LABEL}: ${withdrawalLink(order, config)}`
             : "",
     ].join("\n");
 
@@ -352,7 +353,7 @@ ${button(message.link, message.button)}
     };
 }
 
-// ---------- Retragerea din contract (migrația 024) ----------
+// ---------- Returul = retragerea din contract (migrația 024) ----------
 
 // Ce urmează după cerere: aceleași reguli ca pe site și în Politica de retur
 function withdrawalNextSteps(data) {
@@ -384,7 +385,8 @@ function withdrawalItemsList(data) {
         .join("");
 }
 
-// Confirmarea de primire pentru client: legea cere conținutul declarației, data și ora trimiterii
+// Confirmarea de primire pentru client: legea cere conținutul declarației, data și ora trimiterii.
+// Spunem „retur” (cum caută clienții) și o dată, în paranteză, „retragere din contract” (cum scrie în lege).
 function customerWithdrawalEmail(data, config) {
     const n = data.order.order_number;
     const when = dateTime(data.created_at);
@@ -392,9 +394,9 @@ function customerWithdrawalEmail(data, config) {
     const steps = withdrawalNextSteps(data);
     const link = withdrawalLink(data.order, config);
 
-    const body = `<h1 style="margin:0 0 12px;font-size:22px;color:${OLIVE}">Am primit cererea ta de retragere</h1>
+    const body = `<h1 style="margin:0 0 12px;font-size:22px;color:${OLIVE}">Am primit cererea ta de retur</h1>
 <p style="margin:0 0 8px;font-size:15px">${esc(hello)}</p>
-<p style="margin:0 0 8px;font-size:15px;line-height:1.5">Îți confirmăm că am primit cererea ta de retragere din contract pentru comanda <strong>#${esc(n)}</strong>, trimisă pe <strong>${esc(when)}</strong>.</p>
+<p style="margin:0 0 8px;font-size:15px;line-height:1.5">Îți confirmăm că am primit cererea ta de retur (retragere din contract) pentru comanda <strong>#${esc(n)}</strong>, trimisă pe <strong>${esc(when)}</strong>.</p>
 <p style="margin:16px 0 6px;font-size:14px;font-weight:bold">Declarația ta</p>
 <p style="margin:0;padding:12px 14px;background:${OLIVE_LIGHT};border-left:4px solid ${OLIVE};font-size:14px;line-height:1.5">${esc(data.statement)}</p>
 <p style="margin:16px 0 6px;font-size:14px;font-weight:bold">Produsele</p>
@@ -406,7 +408,7 @@ ${button(link, "Vezi cererea pe site")}`;
     const text = [
         hello,
         "",
-        `Îți confirmăm că am primit cererea ta de retragere din contract pentru comanda #${n}, trimisă pe ${when}.`,
+        `Îți confirmăm că am primit cererea ta de retur (retragere din contract) pentru comanda #${n}, trimisă pe ${when}.`,
         "",
         "Declarația ta:",
         data.statement,
@@ -421,9 +423,9 @@ ${button(link, "Vezi cererea pe site")}`;
         from: config.from,
         to: data.email,
         replyTo: config.shopEmail,
-        subject: `Am primit cererea ta de retragere · comanda #${n}`,
+        subject: `Am primit cererea ta de retur · comanda #${n}`,
         text,
-        html: layout(`Confirmarea cererii de retragere, trimisă pe ${when}`, body, config),
+        html: layout(`Confirmarea cererii de retur, trimisă pe ${when}`, body, config),
     };
 }
 
@@ -439,7 +441,7 @@ function shopWithdrawalEmail(data, config) {
         ? `<p style="margin:12px 0 0;font-size:14px">A trimis și IBAN-ul pentru rambursare: îl găsești în admin.</p>`
         : "";
 
-    const body = `<h1 style="margin:0 0 12px;font-size:22px;color:${OLIVE}">Cerere de retragere · comanda #${esc(n)}</h1>
+    const body = `<h1 style="margin:0 0 12px;font-size:22px;color:${OLIVE}">Cerere de retur · comanda #${esc(n)}</h1>
 <p style="margin:0;font-size:15px;line-height:1.6"><strong>${esc(data.customer_name)}</strong> · ${esc(data.email)}<br>Trimisă pe ${esc(when)}</p>
 ${reason}
 <p style="margin:16px 0 6px;font-size:14px;font-weight:bold">Produsele returnate</p>
@@ -449,7 +451,7 @@ ${iban}
 ${button(link, "Deschide comanda în admin")}`;
 
     const text = [
-        `Cerere de retragere · comanda #${n}`,
+        `Cerere de retur · comanda #${n}`,
         `${data.customer_name}, ${data.email}`,
         `Trimisă pe ${when}`,
         data.reason ? `Motivul clientului: ${data.reason}` : "",
@@ -463,9 +465,9 @@ ${button(link, "Deschide comanda în admin")}`;
         from: config.from,
         to: config.shopEmail,
         replyTo: data.email, // apeși „Răspunde” și îi scrii direct clientului
-        subject: `Cerere de retragere · comanda #${n}`,
+        subject: `Cerere de retur · comanda #${n}`,
         text,
-        html: layout(`Cerere de retragere de la ${data.customer_name}`, body, config),
+        html: layout(`Cerere de retur de la ${data.customer_name}`, body, config),
     };
 }
 

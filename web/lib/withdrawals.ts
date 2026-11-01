@@ -1,7 +1,12 @@
-// Retragerea din contract (migrația 024). Etichetele butoanelor sunt exact cele din lege
-// (OUG 34/2014, modificată de OUG 18/2026), ca la un control ANPC să nu existe discuții.
-export const WITHDRAW_LABEL = "Retrageți-vă din contract aici";
-export const CONFIRM_LABEL = "Confirmați retragerea";
+// Returul în 14 zile = „retragerea din contract” din lege (OUG 34/2014, modificată de OUG 18/2026).
+// Legea cere ca butonul să spună „retrageți-vă din contract aici” SAU o formulare similară,
+// fără ambiguitate. Clienții caută „retur”, așa că folosim „retur”, cum fac eMAG („Formular
+// returnare produs”) și platformele de magazine (MerchantPro recomandă „Formular de retur”).
+// Pe pagini explicăm o dată că returul înseamnă retragerea din contract.
+export const RETURN_FORM_LABEL = "Formular de retur"; // linkul din subsol și din mailuri
+export const RETURN_BUTTON_LABEL = "Returnează produse"; // butonul de la fiecare comandă
+export const CONFIRM_LABEL = "Confirmă returul"; // butonul final (legea: „confirmați retragerea” sau similar)
+export const RETURN_FORM_PATH = "/retur/formular";
 
 export const WITHDRAWAL_STATUSES = ["received", "goods_received", "refunded", "closed"] as const;
 export type WithdrawalStatus = (typeof WITHDRAWAL_STATUSES)[number];

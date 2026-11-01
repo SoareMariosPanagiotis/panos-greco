@@ -46,9 +46,9 @@ async function Privacy() {
                         pentru parolă nouă și pentru confirmarea emailului. Nu îți trimitem mesaje de marketing.
                     </li>
                     <li>
-                        <strong>Retragerea din contract:</strong> numele, emailul, produsele returnate, motivul (dacă ni-l
+                        <strong>Returul (retragerea din contract):</strong> numele, emailul, produsele returnate, motivul (dacă ni-l
                         spui) și, opțional, IBAN-ul pentru rambursare. Le folosim ca să respectăm dreptul tău de
-                        retragere; IBAN-ul îl ștergem după ce îți returnăm banii.
+                        retur; IBAN-ul îl ștergem după ce îți returnăm banii.
                     </li>
                     <li>
                         <strong>Factura pe firmă:</strong> când cauți firma după CUI, trimitem CUI-ul la serviciul

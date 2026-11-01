@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatPrice } from "@/lib/catalog";
 import { formatPlace, sameCity, type SavedAddress } from "@/lib/customer";
-import { WITHDRAW_LABEL } from "@/lib/withdrawals";
+import { RETURN_FORM_LABEL } from "@/lib/withdrawals";
 
 export type DeliveryOption = {
     code: string;
@@ -507,11 +507,11 @@ export function CheckoutForm({ deliveryOptions, paymentOptions, account }: Props
           </span>
                 </label>
 
-                {/* Informarea de dinainte de comandă despre dreptul de retragere (OUG 34/2014) */}
+                {/* Informarea de dinainte de comandă despre dreptul de retur (retragere, OUG 34/2014) */}
                 <p className="text-xs leading-relaxed text-neutral-500">
-                    Te poți retrage din contract în 14 zile de la primire, fără să ne spui motivul, cu butonul „
-                    {WITHDRAW_LABEL}” din subsolul site-ului, din contul tău sau din mailul de confirmare.
-                    Costul returului e al tău, iar alimentele desigilate nu pot fi returnate. Detalii în{" "}
+                    Poți returna produsele în 14 zile de la primire, fără să ne spui motivul, din „
+                    {RETURN_FORM_LABEL}” (în subsolul site-ului), din contul tău sau din mailul de confirmare.
+                    Costul transportului de retur e al tău, iar alimentele desigilate nu pot fi returnate. Detalii în{" "}
                     <Link href="/retur" className="text-olive underline">
                         Politica de retur
                     </Link>

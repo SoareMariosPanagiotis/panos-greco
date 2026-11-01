@@ -1,23 +1,23 @@
 "use client";
 
 import { useActionState } from "react";
-import { updateWithdrawal, type WithdrawalActionState } from "@/app/admin/retrageri/actions";
+import { updateReturn, type ReturnActionState } from "@/app/admin/retururi/actions";
 import { Button } from "@/components/ui/button";
 
-const initialState: WithdrawalActionState = { status: "idle", message: "" };
+const initialState: ReturnActionState = { status: "idle", message: "" };
 
 const textareaClass =
     "w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-olive focus-visible:ring-2 focus-visible:ring-olive/20";
 
-type WithdrawalActionsProps = {
+type ReturnActionsProps = {
     id: string;
     status: string;
     adminNote: string | null;
 };
 
 // Butoanele pentru pașii următori: primită → produse primite → bani returnați (sau închisă)
-export function WithdrawalActions({ id, status, adminNote }: WithdrawalActionsProps) {
-    const [state, formAction, pending] = useActionState(updateWithdrawal, initialState);
+export function ReturnActions({ id, status, adminNote }: ReturnActionsProps) {
+    const [state, formAction, pending] = useActionState(updateReturn, initialState);
     const open = status === "received" || status === "goods_received";
 
     return (

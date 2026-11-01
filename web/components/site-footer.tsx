@@ -1,24 +1,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getShopInfo, phoneHref, type ShopInfo } from "@/lib/shop-info";
-import { WITHDRAW_LABEL } from "@/lib/withdrawals";
+import { RETURN_FORM_LABEL, RETURN_FORM_PATH } from "@/lib/withdrawals";
 
 // Subsolul, pe fiecare pagină. Aici stau lucrurile cerute de lege:
 //   - datele de identificare ale firmei (legea comerțului electronic, 365/2002)
-//   - butonul „Retrageți-vă din contract aici” (OUG 34/2014, modificată de OUG 18/2026)
+//   - formularul de retur, adică funcția de retragere din contract (OUG 18/2026)
 //   - pictograma ANPC SAL, 250 × 50 px, cu link la reclamatiisal.anpc.ro (Ordinul ANPC 270/2026)
 
 const infoLinks = [
     { href: "/termeni", label: "Termeni și condiții" },
     { href: "/confidentialitate", label: "Politica de confidențialitate" },
-    { href: "/retur", label: "Politica de retur" },
     { href: "/contact", label: "Contact" },
+    { href: "/cont", label: "Contul meu" },
 ];
 
-const orderLinks = [
-    { href: "/cont", label: "Contul meu" },
-    { href: "/cos", label: "Coșul de cumpărături" },
-];
+const heading = "text-sm font-semibold uppercase tracking-wide text-white/70";
 
 // Datele firmei vin din baza de date (le completezi din admin)
 export async function SiteFooter() {
@@ -43,14 +40,36 @@ function FooterLayout({ shop }: { shop: ShopInfo | null }) {
 
     return (
         <footer className="mt-auto bg-olive text-white">
-            <div className="mx-auto grid max-w-6xl gap-8 px-8 py-10 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mx-auto grid max-w-6xl gap-10 px-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                    <Image src="/logo-text-white.svg" alt="Panos Greco" width={321} height={66} className="h-9 w-auto" />
-                    <p className="mt-3 text-sm text-white/80">Ulei de măsline extravirgin bio, din livada proprie.</p>
+                    {/* Soarele și numele decupate direct din logo, cu aceleași proporții, dar albe */}
+                    <Link href="/" className="inline-block" aria-label="Panos Greco, prima pagină">
+                        <Image src="/logo-white.svg" alt="Panos Greco" width={324} height={294} className="h-36 w-auto" />
+                    </Link>
+                    <p className="mt-4 max-w-xs text-sm text-white/80">
+                        Ulei de măsline extravirgin bio, din livada proprie.
+                    </p>
                 </div>
 
+                <nav aria-label="Retur">
+                    <h2 className={heading}>Retur</h2>
+                    <ul className="mt-3 space-y-2 text-sm">
+                        {/* Legea cere ca formularul să fie vizibil și ușor de găsit, tot timpul */}
+                        <li>
+                            <Link href={RETURN_FORM_PATH} className="font-semibold underline underline-offset-4">
+                                {RETURN_FORM_LABEL}
+                            </Link>
+                        </li>
+                        <li>
+                            <Link href="/retur" className="hover:underline">
+                                14 zile drept de retur
+                            </Link>
+                        </li>
+                    </ul>
+                </nav>
+
                 <nav aria-label="Informații">
-                    <h2 className="text-sm font-semibold uppercase tracking-wide text-white/70">Informații</h2>
+                    <h2 className={heading}>Informații</h2>
                     <ul className="mt-3 space-y-2 text-sm">
                         {infoLinks.map((link) => (
                             <li key={link.href}>
@@ -62,27 +81,8 @@ function FooterLayout({ shop }: { shop: ShopInfo | null }) {
                     </ul>
                 </nav>
 
-                <nav aria-label="Comenzi">
-                    <h2 className="text-sm font-semibold uppercase tracking-wide text-white/70">Comenzi</h2>
-                    <ul className="mt-3 space-y-2 text-sm">
-                        {/* Legea cere ca butonul să fie vizibil și ușor de găsit, tot timpul */}
-                        <li>
-                            <Link href="/retragere" className="font-semibold underline underline-offset-4">
-                                {WITHDRAW_LABEL}
-                            </Link>
-                        </li>
-                        {orderLinks.map((link) => (
-                            <li key={link.href}>
-                                <Link href={link.href} className="hover:underline">
-                                    {link.label}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-
                 <div>
-                    <h2 className="text-sm font-semibold uppercase tracking-wide text-white/70">Contact</h2>
+                    <h2 className={heading}>Contact</h2>
                     <ul className="mt-3 space-y-2 text-sm">
                         {shop && (
                             <li>

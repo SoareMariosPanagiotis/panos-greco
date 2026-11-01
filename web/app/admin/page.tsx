@@ -13,7 +13,7 @@ const sections = [
     { href: "/admin/livrare", title: "Livrare și plată", text: "Prețuri, livrare gratuită, metode active." },
 ];
 
-// Doar numerele care te interesează: comenzi noi, cereri de retragere noi și ce lipsește din datele firmei
+// Doar numerele care te interesează: comenzi noi, cereri de retur noi și ce lipsește din datele firmei
 const dashboardQuery = `
   query AdminDashboard {
     allOrders(condition: { status: "new" }) { totalCount }
@@ -80,12 +80,12 @@ async function AdminDashboard() {
                 />
 
                 <AttentionCard
-                    href="/admin/retrageri"
-                    title="Retrageri"
+                    href="/admin/retururi"
+                    title="Retururi"
                     text={
                         newWithdrawals > 0
-                            ? `${pluralRo(newWithdrawals, "cerere nouă", "cereri noi")} de retragere`
-                            : "Nicio cerere nouă de retragere."
+                            ? `${pluralRo(newWithdrawals, "cerere nouă de retur", "cereri noi de retur")}`
+                            : "Nicio cerere nouă de retur."
                     }
                     attention={newWithdrawals > 0}
                 />

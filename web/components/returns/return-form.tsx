@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { CircleCheck } from "lucide-react";
-import { requestWithdrawal, type WithdrawalState } from "@/app/retragere/actions";
+import { requestWithdrawal, type WithdrawalState } from "@/app/retur/formular/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,9 +21,9 @@ const initialState: WithdrawalState = { done: false, error: null };
 const textareaClass =
     "w-full rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-olive focus-visible:ring-2 focus-visible:ring-olive/20";
 
-// Formularul cerut de lege: numele, contractul (comanda și produsele), emailul pentru confirmare
-// și un buton separat, „Confirmați retragerea”. Motivul și IBAN-ul sunt opționale.
-export function WithdrawalForm({ data, returnAddress }: WithdrawalFormProps) {
+// Formularul de retur, adică declarația de retragere cerută de lege: numele, contractul (comanda
+// și produsele), emailul pentru confirmare și un buton separat de confirmare. Motivul și IBAN-ul sunt opționale.
+export function ReturnForm({ data, returnAddress }: WithdrawalFormProps) {
     const [state, formAction, pending] = useActionState(requestWithdrawal, initialState);
 
     if (state.done && state.createdAt && state.statement) {
@@ -83,7 +83,7 @@ export function WithdrawalForm({ data, returnAddress }: WithdrawalFormProps) {
                     ))}
                     {alreadyRequested.map((item) => (
                         <li key={item.id} className="px-4 py-3 text-sm text-neutral-400">
-                            {item.productName} ({item.sizeLabel}): retragere deja cerută
+                            {item.productName} ({item.sizeLabel}): retur deja cerut
                         </li>
                     ))}
                 </ul>
@@ -183,13 +183,13 @@ type ReceivedProps = {
     returnAddress: string | null;
 };
 
-// Ce vede clientul după „Confirmați retragerea”: aceeași confirmare primește și pe email
+// Ce vede clientul după „Confirmă returul”: aceeași confirmare primește și pe email
 function WithdrawalReceived({ createdAt, email, statement, returnAddress }: ReceivedProps) {
     return (
         <div className="space-y-6">
             <div className="rounded-xl border bg-white p-8 text-center">
                 <CircleCheck className="mx-auto size-12 text-green-700" />
-                <h2 className="mt-4 text-2xl font-bold text-olive">Am primit cererea ta de retragere</h2>
+                <h2 className="mt-4 text-2xl font-bold text-olive">Am primit cererea ta de retur</h2>
                 <p className="mt-2 text-neutral-700">Trimisă pe {formatRequestTime(createdAt)}.</p>
                 <p className="mt-1 text-sm text-neutral-600">
                     Ți-am trimis confirmarea pe email, la <strong>{email}</strong>.

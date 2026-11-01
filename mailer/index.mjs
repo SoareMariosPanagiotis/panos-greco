@@ -2,7 +2,7 @@
 // Trei cozi, aceeași regulă: poștașul nu atinge tabelele direct, doar funcțiile din schema mailer.
 //   - comenzile: rândurile din sales.order_status_history cu notified_at gol
 //   - contul: linkurile pentru parolă uitată și confirmarea emailului (migrația 022)
-//   - retragerile: confirmarea de primire a cererii de retragere (migrația 024)
+//   - retururile: confirmarea de primire a cererii de retur (migrația 024)
 
 import pg from "pg";
 import * as nodemailerModule from "nodemailer";
@@ -79,7 +79,7 @@ async function deliverAccountEmails() {
     }
 }
 
-// O tură pentru retrageri: confirmarea pentru client și notificarea pentru tine
+// O tură pentru retururi: confirmarea pentru client și notificarea pentru tine
 async function deliverWithdrawalEmails() {
     const { rows } = await pool.query("select * from mailer.claim_withdrawal_emails(10)");
 
@@ -91,11 +91,11 @@ async function deliverWithdrawalEmails() {
                 await transport.sendMail(email);
             }
             await pool.query("select mailer.complete_withdrawal_email($1)", [row.withdrawal_id]);
-            console.log(`✓ retragere #${data.order.order_number}: ${emails.length} mail(uri) trimise`);
+            console.log(`✓ retur #${data.order.order_number}: ${emails.length} mail(uri) trimise`);
         } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
             await pool.query("select mailer.fail_withdrawal_email($1, $2)", [row.withdrawal_id, message]);
-            console.error(`✗ retragere #${data.order.order_number}: ${message}. Reîncerc mai târziu.`);
+            console.error(`✗ retur #${data.order.order_number}: ${message}. Reîncerc mai târziu.`);
         }
     }
 }

@@ -2,10 +2,11 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { WithdrawalForm } from "@/components/withdrawal/withdrawal-form";
+import { ReturnForm } from "@/components/returns/return-form";
 import { gql } from "@/lib/catalog";
 import { getShopInfo } from "@/lib/shop-info";
 import {
+    RETURN_FORM_PATH,
     formatDeadline,
     formatRequestTime,
     parseJson,
@@ -15,7 +16,7 @@ import {
 } from "@/lib/withdrawals";
 
 export const metadata: Metadata = {
-    title: "Retragerea din contract · Panos Greco",
+    title: "Formular de retur · Panos Greco",
     robots: { index: false, follow: false },
     // Id-ul comenzii stă în adresa paginii: nu-l trimitem mai departe când clientul dă click pe alt site
     referrer: "no-referrer",
@@ -32,7 +33,7 @@ function Requests({ requests }: { requests: WithdrawalRequestSummary[] }) {
         <ul className="mt-3 space-y-1 text-sm text-neutral-600">
             {requests.map((request) => (
                 <li key={request.createdAt}>
-                    Cerere trimisă pe {formatRequestTime(request.createdAt)} · {withdrawalStatusLabel(request.status)}
+                    Cerere de retur trimisă pe {formatRequestTime(request.createdAt)} · {withdrawalStatusLabel(request.status)}
                 </li>
             ))}
         </ul>
@@ -61,9 +62,9 @@ async function WithdrawalView({ params }: { params: Promise<{ id: string }> }) {
                 <h2 className="text-lg font-semibold">Comanda #{form.orderNumber}</h2>
                 <p className="mt-2 text-neutral-700">
                     {form.reason === "cancelled" && "Comanda a fost anulată, deci nu mai e nimic de returnat."}
-                    {form.reason === "complete" && "Ai cerut deja retragerea pentru toate produsele din această comandă."}
+                    {form.reason === "complete" && "Ai cerut deja returul pentru toate produsele din această comandă."}
                     {form.reason === "expired" &&
-                        `Termenul de 14 zile pentru retragere s-a încheiat${
+                        `Termenul de 14 zile pentru retur s-a încheiat${
                             form.deadline ? ` pe ${formatDeadline(form.deadline)}` : ""
                         }.`}
                 </p>
@@ -97,13 +98,13 @@ async function WithdrawalView({ params }: { params: Promise<{ id: string }> }) {
                 </h2>
                 <p className="mt-1 text-sm text-neutral-700">
                     {form.deadline
-                        ? `Te poți retrage până pe ${formatDeadline(form.deadline)}, fără să ne spui motivul.`
-                        : "Comanda nu a ajuns încă la tine: te poți retrage oricând până la livrare și încă 14 zile după."}
+                        ? `Poți returna produsele până pe ${formatDeadline(form.deadline)}, fără să ne spui motivul.`
+                        : "Comanda nu a ajuns încă la tine: poți renunța oricând până la livrare și încă 14 zile după."}
                 </p>
                 <Requests requests={form.requests} />
             </div>
 
-            <WithdrawalForm data={form} returnAddress={shop.shopAddress} />
+            <ReturnForm data={form} returnAddress={shop.shopAddress} />
         </div>
     );
 }
@@ -112,10 +113,10 @@ export default function WithdrawalPage({ params }: { params: Promise<{ id: strin
     return (
         <main className="mx-auto w-full max-w-3xl space-y-6 px-8 py-10">
             <div>
-                <Link href="/retragere" className="text-sm text-olive hover:underline">
+                <Link href={RETURN_FORM_PATH} className="text-sm text-olive hover:underline">
                     ← Altă comandă
                 </Link>
-                <h1 className="mt-2 text-3xl font-bold text-olive">Retragerea din contract</h1>
+                <h1 className="mt-2 text-3xl font-bold text-olive">Formular de retur</h1>
             </div>
             <Suspense fallback={<p>Se încarcă comanda...</p>}>
                 <WithdrawalView params={params} />

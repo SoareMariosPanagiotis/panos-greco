@@ -5,7 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 import { gql } from "@/lib/catalog";
 import { WITHDRAWAL_STATUS_STYLES, formatRequestTime, withdrawalStatusLabel } from "@/lib/withdrawals";
 
-export const metadata: Metadata = { title: "Retrageri · Administrare" };
+export const metadata: Metadata = { title: "Retururi · Administrare" };
 
 type WithdrawalRow = {
     id: string;
@@ -35,7 +35,7 @@ async function WithdrawalsList() {
     const rows = data.allWithdrawals.nodes;
 
     if (rows.length === 0) {
-        return <p className="mt-6 rounded-xl border bg-white p-6 text-neutral-600">Nicio cerere de retragere.</p>;
+        return <p className="mt-6 rounded-xl border bg-white p-6 text-neutral-600">Nicio cerere de retur.</p>;
     }
 
     return (
@@ -90,9 +90,9 @@ export default function AdminWithdrawalsPage() {
             <Link href="/admin" className="text-sm text-olive hover:underline">
                 ← Administrare
             </Link>
-            <h1 className="mt-2 text-3xl font-bold text-olive">Cereri de retragere</h1>
+            <h1 className="mt-2 text-3xl font-bold text-olive">Cereri de retur</h1>
             <p className="mt-1 text-neutral-600">
-                Le trimit clienții cu butonul „Retrageți-vă din contract aici”. Deschide comanda ca să marchezi pașii.
+                Le trimit clienții din „Formular de retur”. Deschide comanda ca să marchezi pașii.
             </p>
             <Suspense fallback={<p className="mt-6">Se încarcă cererile...</p>}>
                 <WithdrawalsList />

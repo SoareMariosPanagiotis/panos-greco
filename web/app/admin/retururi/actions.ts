@@ -4,10 +4,10 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { gql } from "@/lib/catalog";
 
-// Pașii unei cereri de retragere, din admin. Regulile (ce pas urmează după care)
+// Pașii unei cereri de retur, din admin. Regulile (ce pas urmează după care)
 // le verifică trigger-ul din baza de date (migrația 024).
 
-export type WithdrawalActionState = { status: "idle" | "saved" | "error"; message: string };
+export type ReturnActionState = { status: "idle" | "saved" | "error"; message: string };
 
 const UUID = /^[0-9a-f-]{36}$/i;
 
@@ -27,10 +27,10 @@ const updateMutation = `
   }
 `;
 
-export async function updateWithdrawal(
-    _previous: WithdrawalActionState,
+export async function updateReturn(
+    _previous: ReturnActionState,
     formData: FormData,
-): Promise<WithdrawalActionState> {
+): Promise<ReturnActionState> {
     const { token } = await requireAdmin();
 
     const id = String(formData.get("id") ?? "");

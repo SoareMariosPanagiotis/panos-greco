@@ -12,6 +12,7 @@ import {
 } from "@/components/order-view";
 import { requireCustomer } from "@/lib/auth";
 import { gql } from "@/lib/catalog";
+import { parseJson } from "@/lib/withdrawals";
 
 export const metadata: Metadata = {
     title: "Comanda ta · Panos Greco",
@@ -24,10 +25,13 @@ type MyOrder = OrderViewData & {
     withdrawalDeadline: string | null;
     orderItemsByOrderId: { nodes: OrderViewItem[] };
     orderStatusHistoriesByOrderId: { nodes: OrderHistoryEntry[] };
-    withdrawalsByOrderId: { nodes: { id: string; createdAt: string; status: string }[] };
+    // Câmp calculat (migrația 026): data și starea cererilor de retur, ca JSON
+    withdrawalRequests: unknown;
 };
 
-// Comanda, produsele, istoricul și cererile de retragere, într-o singură cerere
+type WithdrawalRequest = { id: string; createdAt: string; status: string };
+
+// Comanda, produsele, istoricul și cererile de retur, într-o singură cerere
 const query = `
   query MyOrder($number: Int!) {
     orderByOrderNumber(orderNumber: $number) {
@@ -39,9 +43,7 @@ const query = `
       orderStatusHistoriesByOrderId(orderBy: CREATED_AT_ASC) {
         nodes { id status createdAt }
       }
-      withdrawalsByOrderId(orderBy: CREATED_AT_ASC) {
-        nodes { id createdAt status }
-      }
+      withdrawalRequests
     }
   }
 `;
@@ -74,7 +76,7 @@ async function MyOrderView({ params }: { params: Promise<{ numar: string }> }) {
                 orderId: order.id,
                 canWithdraw: order.canWithdraw,
                 deadline: order.withdrawalDeadline,
-                requests: order.withdrawalsByOrderId.nodes,
+                requests: parseJson<WithdrawalRequest[]>(order.withdrawalRequests) ?? [],
             }}
         />
     );
