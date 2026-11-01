@@ -17,8 +17,12 @@ export function AddressForm({ address }: { address?: SavedAddress }) {
         <form action={formAction} className="mt-6 space-y-4 rounded-xl border bg-white p-6">
             {address && <input type="hidden" name="id" value={address.id} />}
 
-            {/* După o eroare, câmpurile păstrează ce a scris clientul */}
-            <AddressFields defaults={state.values ?? address} />
+            {/* După o eroare, câmpurile păstrează ce a scris clientul. key: valorile noi
+                de la server reconstruiesc câmpurile, ca județul și localitatea să fie cele trimise */}
+            <AddressFields
+                key={[state.values?.county, state.values?.city].join("|")}
+                defaults={state.values ?? address}
+            />
 
             {state.error && (
                 <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">

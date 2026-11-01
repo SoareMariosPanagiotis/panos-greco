@@ -1,12 +1,21 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { Combobox, type ComboboxOption } from "@/components/combobox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { COUNTIES } from "@/lib/counties";
+import { getLocalities, type Locality } from "@/lib/localities";
 
 // Câmpurile unei adrese: județ, localitate, adresă, cod poștal.
 // Aceleași în „Adresele mele” și la comandă, ca să arate și să se verifice la fel.
+//
+// Câmpurile pornesc de la `defaults` doar când componenta apare pe pagină.
+// Dacă vin alte valori de la server (de exemplu după o eroare), părintele îi schimbă `key`
+// și React o construiește din nou cu ele.
 
-const selectClass =
-    "h-9 w-full rounded-lg border bg-transparent px-3 text-sm outline-none focus-visible:border-olive";
+// Județele nu se schimbă: lista de variante o facem o singură dată
+const COUNTY_OPTIONS: ComboboxOption[] = COUNTIES.map((county) => ({ value: county, label: county }));
 
 type Props = {
     // Ce scrie inițial în câmpuri (adresa salvată, sau ce a completat înainte de o eroare)
@@ -16,29 +25,62 @@ type Props = {
 };
 
 export function AddressFields({ defaults, fixedCity }: Props) {
-    // La un oraș fix care e și județ (ex. Galați), județul vine ales din start
-    const county = defaults?.county || (fixedCity && COUNTIES.includes(fixedCity) ? fixedCity : "");
+    // Județul de pornire. La un oraș fix care e și județ (ex. Galați), vine ales din start.
+    const startCounty = defaults?.county || (fixedCity && COUNTIES.includes(fixedCity) ? fixedCity : "");
+    const [county, setCounty] = useState(startCounty);
+
+    // Localitățile județului ales, cerute de la server. Ținem minte și județul lor,
+    // ca să nu arătăm nici măcar o clipă localitățile județului de dinainte.
+    const [loaded, setLoaded] = useState<{ county: string; list: Locality[] } | null>(null);
+
+    useEffect(() => {
+        if (!county || fixedCity) return;
+        let ignore = false;
+        getLocalities(county)
+            .then((list) => {
+                if (!ignore) setLoaded({ county, list });
+            })
+            .catch(() => {
+                if (!ignore) setLoaded({ county, list: [] });
+            });
+        return () => {
+            ignore = true;
+        };
+    }, [county, fixedCity]);
+
+    const localities = loaded?.county === county ? loaded.list : null; // null = se încarcă
+    const localityOptions = useMemo(
+        () =>
+            localities?.map((locality) => ({
+                value: locality.label,
+                label: locality.label,
+                tag: locality.isUrban ? "oraș" : undefined,
+                featured: locality.isUrban, // orașele apar primele
+            })) ?? null,
+        [localities],
+    );
 
     return (
         <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
                 <Label htmlFor="county">Județ</Label>
-                <select id="county" name="county" required className={selectClass} defaultValue={county}>
-                    <option value="" disabled>
-                        Alege județul
-                    </option>
-                    {COUNTIES.map((name) => (
-                        <option key={name} value={name}>
-                            {name}
-                        </option>
-                    ))}
-                </select>
+                <Combobox
+                    id="county"
+                    name="county"
+                    options={COUNTY_OPTIONS}
+                    defaultValue={startCounty}
+                    placeholder="Alege județul"
+                    emptyText="Niciun județ găsit"
+                    invalidText="Alege județul din listă."
+                    onValueChange={setCounty}
+                />
             </div>
             <div className="space-y-2">
                 <Label htmlFor="city">Localitate</Label>
                 {fixedCity ? (
                     <Input id="city" name="city" value={fixedCity} readOnly className="bg-neutral-50" />
-                ) : (
+                ) : localities?.length === 0 ? (
+                    // Lista n-a putut fi încărcată (server căzut, date lipsă): o scrie de mână
                     <Input
                         id="city"
                         name="city"
@@ -46,6 +88,20 @@ export function AddressFields({ defaults, fixedCity }: Props) {
                         maxLength={100}
                         defaultValue={defaults?.city ?? ""}
                         required
+                    />
+                ) : !county ? (
+                    <Input id="city" placeholder="Alege întâi județul" disabled />
+                ) : (
+                    <Combobox
+                        // key: alt județ = câmp nou, gol (localitatea veche nu e în județul nou)
+                        key={county}
+                        id="city"
+                        name="city"
+                        options={localityOptions}
+                        defaultValue={county === startCounty ? (defaults?.city ?? "") : ""}
+                        placeholder="Alege localitatea"
+                        emptyText="Nicio localitate găsită"
+                        invalidText="Alege localitatea din listă."
                     />
                 )}
             </div>

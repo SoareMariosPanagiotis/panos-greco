@@ -36,6 +36,7 @@ type AdminOrder = {
     companyName: string | null;
     companyCui: string | null;
     companyRegNo: string | null;
+    companyAddress: string | null; // din migrația 020; comenzile vechi nu o au
     paymentName: string;
     paymentStatus: string;
     subtotal: string;
@@ -57,7 +58,7 @@ const query = `
       id orderNumber status createdAt
       customerName email phone
       deliveryName county city address postalCode courier awb
-      companyName companyCui companyRegNo
+      companyName companyCui companyRegNo companyAddress
       paymentName paymentStatus
       subtotal discountTotal shippingTotal paymentFee total
       customerNote
@@ -246,6 +247,12 @@ async function OrderDetails({ params }: { params: Promise<{ numar: string }> }) 
                                         <>
                                             <br />
                                             Nr. Reg. Com. {order.companyRegNo}
+                                        </>
+                                    )}
+                                    {order.companyAddress && (
+                                        <>
+                                            <br />
+                                            {order.companyAddress}
                                         </>
                                     )}
                                 </p>

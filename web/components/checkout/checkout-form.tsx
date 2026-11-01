@@ -11,6 +11,7 @@ import {
 } from "@/app/comanda/actions";
 import { AddressFields } from "@/components/address-fields";
 import { useCart } from "@/components/cart-provider";
+import { CompanyFields } from "@/components/checkout/company-fields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -350,8 +351,13 @@ export function CheckoutForm({ deliveryOptions, paymentOptions, account }: Props
                             </>
                         ) : (
                             <>
-                                {/* key: când schimbi metoda de livrare, câmpurile pornesc de la zero */}
-                                <AddressFields key={delivery.code} defaults={values} fixedCity={delivery.city} />
+                                {/* key: la altă metodă de livrare sau la valori noi de la server (după o eroare),
+                                    câmpurile pornesc din nou, de la valorile primite */}
+                                <AddressFields
+                                    key={[delivery.code, values?.county, values?.city].join("|")}
+                                    defaults={values}
+                                    fixedCity={delivery.city}
+                                />
                                 {account && (
                                     <label className="flex items-center gap-2 text-sm">
                                         <input
@@ -379,39 +385,8 @@ export function CheckoutForm({ deliveryOptions, paymentOptions, account }: Props
                         />
                         Vreau factură pe firmă
                     </label>
-                    {wantsInvoice && (
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2 sm:col-span-2">
-                                <Label htmlFor="companyName">Numele firmei</Label>
-                                <Input
-                                    id="companyName"
-                                    name="companyName"
-                                    autoComplete="organization"
-                                    defaultValue={values?.companyName ?? ""}
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="companyCui">CUI</Label>
-                                <Input
-                                    id="companyCui"
-                                    name="companyCui"
-                                    placeholder="RO12345678"
-                                    defaultValue={values?.companyCui ?? ""}
-                                    required
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="companyRegNo">Nr. Registrul Comerțului (opțional)</Label>
-                                <Input
-                                    id="companyRegNo"
-                                    name="companyRegNo"
-                                    placeholder="J17/123/2020"
-                                    defaultValue={values?.companyRegNo ?? ""}
-                                />
-                            </div>
-                        </div>
-                    )}
+                    {/* CUI → „Caută la ANAF” → numele, Nr. Reg. Com. și adresa sediului se completează singure */}
+                    {wantsInvoice && <CompanyFields defaults={values} />}
                 </Section>
 
                 <Section title="Plata">

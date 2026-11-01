@@ -1,5 +1,6 @@
 "use server";
 
+import { cuiDigits, findCompany, isValidCui, type Company } from "@/lib/anaf";
 import { getSession } from "@/lib/auth";
 import { gql } from "@/lib/catalog";
 import { saveMyAddress } from "@/lib/customer";
@@ -76,6 +77,7 @@ export type CheckoutValues = {
     companyName: string;
     companyCui: string;
     companyRegNo: string;
+    companyAddress: string;
     customerNote: string;
 };
 
@@ -140,6 +142,7 @@ export async function submitOrder(
         companyName: text(formData, "companyName"),
         companyCui: text(formData, "companyCui"),
         companyRegNo: text(formData, "companyRegNo"),
+        companyAddress: text(formData, "companyAddress"),
         customerNote: text(formData, "customerNote"),
     };
 
@@ -156,6 +159,10 @@ export async function submitOrder(
     const quantities = formData.getAll("quantity").map(Number);
     if (variantIds.length === 0) {
         return { error: "Coșul este gol.", values };
+    }
+    // Un CUI greșit ar ajunge pe factură: verificăm cifra de control, chiar dacă n-a apăsat „Caută”
+    if (values.wantsInvoice && !isValidCui(cuiDigits(values.companyCui))) {
+        return { error: "CUI-ul firmei nu este valid. Verifică cifrele.", values };
     }
 
     // Clientul conectat trimite și biletul lui: place_order ia user_id din bilet și pune
@@ -185,6 +192,7 @@ export async function submitOrder(
                 companyName: values.wantsInvoice ? values.companyName || null : null,
                 companyCui: values.wantsInvoice ? values.companyCui || null : null,
                 companyRegNo: values.wantsInvoice ? values.companyRegNo || null : null,
+                companyAddress: values.wantsInvoice ? values.companyAddress || null : null,
                 customerNote: values.customerNote || null,
             },
         }, client?.token);
@@ -196,4 +204,32 @@ export async function submitOrder(
     // Comanda e plasată. Ce urmează e doar pentru data viitoare
     if (client) await rememberForNextTime(client.token, formData, values);
     return { error: null, orderId };
+}
+
+// ---------- Datele firmei, după CUI (ANAF) ----------
+
+export type CompanyLookup =
+    | { status: "found"; company: Company }
+    | { status: "invalid" | "not-found" | "error"; message: string };
+
+// Butonul „Caută la ANAF” de la Facturare
+export async function lookupCompany(cui: string): Promise<CompanyLookup> {
+    const digits = cuiDigits(String(cui));
+    if (!isValidCui(digits)) {
+        return { status: "invalid", message: "CUI-ul nu este valid. Verifică cifrele." };
+    }
+
+    try {
+        const company = await findCompany(digits);
+        return company
+            ? { status: "found", company }
+            : { status: "not-found", message: "ANAF nu are o firmă cu acest CUI. Verifică cifrele." };
+    } catch (error) {
+        // Clientul vede un mesaj simplu; motivul tehnic rămâne în jurnalul serverului
+        console.error("Căutarea la ANAF a eșuat:", error);
+        return {
+            status: "error",
+            message: "ANAF nu răspunde acum. Completează datele firmei de mână.",
+        };
+    }
 }

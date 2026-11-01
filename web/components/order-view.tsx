@@ -24,6 +24,7 @@ export type OrderViewData = {
     postalCode: string | null;
     companyName: string | null;
     companyCui: string | null;
+    companyAddress: string | null; // din migrația 020; comenzile vechi nu o au
     paymentName: string;
     subtotal: string;
     discountTotal: string;
@@ -48,7 +49,7 @@ export type OrderHistoryEntry = { id: string; status: string; createdAt: string 
 export const ORDER_VIEW_FIELDS = `
   orderNumber status firstName customerName email phone
   deliveryName courier awb county city address postalCode
-  companyName companyCui paymentName
+  companyName companyCui companyAddress paymentName
   subtotal discountTotal shippingTotal paymentFee total createdAt
 `;
 export const ORDER_VIEW_ITEM_FIELDS = `id productName sizeLabel unitPrice quantity lineTotal`;
@@ -246,6 +247,12 @@ export function OrderView({ order, items, place, history }: OrderViewProps) {
                                 {order.companyName}
                                 <br />
                                 CUI {order.companyCui}
+                                {order.companyAddress && (
+                                    <>
+                                        <br />
+                                        {order.companyAddress}
+                                    </>
+                                )}
                             </p>
                         </div>
                     )}
