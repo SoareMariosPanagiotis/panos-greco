@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { gql } from "@/lib/catalog";
-import { ORDER_STATUSES } from "@/lib/orders";
+import { ORDER_STATUSES, isCancelReason } from "@/lib/orders";
 
 export type OrderActionState = {
     status: "idle" | "saved" | "error";
@@ -30,7 +30,7 @@ const SUCCESS: Record<string, string> = {
     ready_for_pickup: "Comanda e gata de ridicare.",
     shipped: "Comanda a fost marcată ca expediată.",
     delivered: "Comanda a fost marcată ca livrată.",
-    cancelled: "Comanda a fost anulată, iar stocul a revenit.",
+    cancelled: "Comanda a fost anulată, iar stocul a revenit. Dacă avea factură, s-a stornat automat.",
 };
 
 // ---------- Schimbarea stării ----------
@@ -54,6 +54,7 @@ export async function changeOrderStatus(
     const status = String(formData.get("status") ?? "");
     const courier = String(formData.get("courier") ?? "").trim();
     const awb = String(formData.get("awb") ?? "").trim();
+    const cancelReason = String(formData.get("cancelReason") ?? "");
 
     if (!UUID.test(id)) return { status: "error", message: "Comandă necunoscută." };
     if (!ORDER_STATUSES.some((known) => known === status)) {
@@ -72,6 +73,11 @@ export async function changeOrderStatus(
     if (status === "shipped") {
         patch.courier = courier || null;
         patch.awb = awb || null;
+    }
+    // La anulare, motivul: apare pe stornare și în mailul clientului (migrația 029)
+    if (status === "cancelled") {
+        if (!isCancelReason(cancelReason)) return { status: "error", message: "Alege motivul anulării." };
+        patch.cancelReason = cancelReason;
     }
 
     try {

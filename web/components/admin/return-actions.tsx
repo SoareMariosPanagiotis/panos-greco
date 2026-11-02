@@ -68,8 +68,11 @@ export function ReturnActions({ id, status, adminNote }: ReturnActionsProps) {
 
             {open && (
                 <p className="text-xs text-neutral-500">
-                    „Închide fără rambursare” e pentru cazurile în care nu e nimic de returnat (de exemplu, comanda a
-                    fost anulată înainte să plece). La final, IBAN-ul clientului se șterge automat.
+                    Dacă comanda are factură, la „Am primit produsele” (sau direct la „Am returnat banii”) se emite
+                    automat factura de stornare pentru produsele returnate, iar clientul o primește pe email. Dacă s-a
+                    returnat tot, se stornează și livrarea. „Închide fără rambursare” e pentru cazurile în care nu e
+                    nimic de returnat (de exemplu, comanda a fost anulată înainte să plece). La final, IBAN-ul
+                    clientului se șterge automat.
                 </p>
             )}
 

@@ -13,7 +13,7 @@ const links = [
 export function SiteHeader() {
     return (
         // relative z-10: logo-ul care iese sub bară rămâne deasupra paginii
-        <header className="relative z-10 bg-olive text-white">
+        <header className="relative z-10 bg-olive text-white print:hidden">
             {/* Bara e mai lată decât conținutul paginii (max-w-6xl = 1152 px), dar are cel mult
                 1536 px (96rem): logo-ul stă spre stânga, meniul spre dreapta, iar pe ecranele
                 foarte late nu se depărtează prea mult unul de altul */}

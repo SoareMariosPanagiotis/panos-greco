@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "nodemailer": "^10.1.4",
+    "pdf-lib": "1.17.1",
     "pg": "^8.13.0"
   }
 }

@@ -1,11 +1,13 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CreateInvoiceButton } from "@/components/admin/invoice-actions";
 import { OrderActions } from "@/components/admin/order-actions";
 import { ReturnActions } from "@/components/admin/return-actions";
 import { OrderStatusBadge } from "@/components/order-status-badge";
 import { requireAdmin } from "@/lib/auth";
 import { formatPrice, gql } from "@/lib/catalog";
+import { formatInvoiceDate, formatMoney, invoiceKindLabel, invoiceNumber, invoicePdfHref } from "@/lib/invoices";
 import { formatOrderDate, paymentLabel, statusLabel } from "@/lib/orders";
 import {
     WITHDRAWAL_STATUS_STYLES,
@@ -40,6 +42,21 @@ type Withdrawal = {
     withdrawalItemsByWithdrawalId: {
         nodes: { quantity: number; orderItemByOrderItemId: { productName: string; sizeLabel: string } | null }[];
     };
+    // Stornarea făcută automat pentru retur (migrația 029): totalul ei e suma de dat înapoi
+    invoicesByWithdrawalId: {
+        nodes: { id: string; series: string | null; number: number | null; total: string }[];
+    };
+};
+
+// Facturile comenzii (migrația 028): factura, eventualele stornări, ciornele
+type OrderInvoice = {
+    id: string;
+    kind: string;
+    status: string;
+    series: string | null;
+    number: number | null;
+    issueDate: string | null;
+    total: string;
 };
 
 type AdminOrder = {
@@ -70,10 +87,16 @@ type AdminOrder = {
     total: string;
     customerNote: string | null;
     withdrawalDeadline: string | null; // câmp calculat: până când se poate retrage clientul
+    cancelReason: string | null; // de ce a fost anulată (migrația 029)
+    cancelledBy: string | null; // cine a anulat-o: clientul din site sau tu (migrația 031)
+    cancelledAt: string | null;
+    cancelDetails: string | null; // motivul ales de client
+    canInvoice: boolean; // câmp calculat: se poate face acum o ciornă de factură?
     deliveryMethodByDeliveryMethodId: { needsAddress: boolean; needsAwb: boolean } | null;
     orderItemsByOrderId: { nodes: OrderItem[] };
     orderStatusHistoriesByOrderId: { nodes: HistoryEntry[] };
     withdrawalsByOrderId: { nodes: Withdrawal[] };
+    invoicesByOrderId: { nodes: OrderInvoice[] };
 };
 
 // Comanda + metoda de livrare + produsele + istoricul, într-o singură cerere.
@@ -89,6 +112,8 @@ const query = `
       subtotal discountTotal shippingTotal paymentFee total
       customerNote
       withdrawalDeadline
+      cancelReason cancelledBy cancelledAt cancelDetails
+      canInvoice
       deliveryMethodByDeliveryMethodId { needsAddress needsAwb }
       orderItemsByOrderId(orderBy: PRODUCT_NAME_ASC) {
         nodes { id productName sizeLabel unitPrice quantity lineTotal }
@@ -102,7 +127,13 @@ const query = `
           withdrawalItemsByWithdrawalId {
             nodes { quantity orderItemByOrderItemId { productName sizeLabel } }
           }
+          invoicesByWithdrawalId(condition: { status: "issued" }) {
+            nodes { id series number total }
+          }
         }
+      }
+      invoicesByOrderId(orderBy: CREATED_AT_ASC) {
+        nodes { id kind status series number issueDate total }
       }
     }
   }
@@ -140,6 +171,17 @@ function WithdrawalsSection({ withdrawals, deadline }: { withdrawals: Withdrawal
                             ))}
                         </ul>
 
+                        {withdrawal.invoicesByWithdrawalId.nodes.map((storno) => (
+                            <p key={storno.id} className="rounded-lg bg-olive-light px-3 py-2">
+                                Stornarea{" "}
+                                <Link href={`/admin/facturi/${storno.id}`} className="font-medium text-olive hover:underline">
+                                    {invoiceNumber(storno)}
+                                </Link>{" "}
+                                a fost emisă și trimisă clientului. De returnat:{" "}
+                                <strong>{formatMoney(Math.abs(Number(storno.total)))} lei</strong>.
+                            </p>
+                        ))}
+
                         <dl className="grid gap-1 text-neutral-700 sm:grid-cols-[120px_1fr]">
                             <dt className="text-neutral-500">Confirmare la</dt>
                             <dd className="break-all">{withdrawal.email}</dd>
@@ -166,6 +208,60 @@ function WithdrawalsSection({ withdrawals, deadline }: { withdrawals: Withdrawal
                     </article>
                 ))}
             </div>
+        </section>
+    );
+}
+
+// Factura comenzii: ce e emis, ce așteaptă confirmarea ta și butonul pentru o ciornă nouă
+function InvoicesSection({
+    orderId,
+    invoices,
+    canInvoice,
+}: {
+    orderId: string;
+    invoices: OrderInvoice[];
+    canInvoice: boolean;
+}) {
+    const waiting = invoices.some((invoice) => invoice.status === "draft");
+
+    return (
+        <section className={`rounded-xl border bg-white p-6 text-sm ${waiting ? "border-amber-400" : ""}`}>
+            <h2 className="font-semibold">Factură</h2>
+            {invoices.length > 0 && (
+                <ul className="mt-3 space-y-2">
+                    {invoices.map((invoice) => (
+                        <li key={invoice.id} className="flex items-baseline justify-between gap-3">
+                            <Link href={`/admin/facturi/${invoice.id}`} className="text-olive hover:underline">
+                                {invoice.status === "draft"
+                                    ? `${invoiceKindLabel(invoice.kind)}: ciornă de emis`
+                                    : `${invoiceKindLabel(invoice.kind)} ${invoiceNumber(invoice)} din ${formatInvoiceDate(invoice.issueDate)}`}
+                            </Link>
+                            <span className="flex items-baseline gap-3 whitespace-nowrap">
+                                <span className="tabular-nums">{formatMoney(invoice.total)} lei</span>
+                                {/* PDF-ul arhivat, același pe care l-a primit clientul (migrația 030) */}
+                                {invoice.status === "issued" && (
+                                    <a
+                                        href={invoicePdfHref(invoice.id)}
+                                        target="_blank"
+                                        rel="noopener"
+                                        className="font-medium text-olive hover:underline"
+                                    >
+                                        PDF
+                                    </a>
+                                )}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+            {invoices.length === 0 && !canInvoice && (
+                <p className="mt-2 text-neutral-500">Factura se face după ce confirmi comanda.</p>
+            )}
+            {canInvoice && (
+                <div className="mt-3">
+                    <CreateInvoiceButton orderId={orderId} />
+                </div>
+            )}
         </section>
     );
 }
@@ -198,6 +294,12 @@ async function OrderDetails({ params }: { params: Promise<{ numar: string }> }) 
     const history = order.orderStatusHistoriesByOrderId.nodes;
     const method = order.deliveryMethodByDeliveryMethodId;
     const withdrawals = order.withdrawalsByOrderId.nodes;
+
+    // Factura emisă care încă n-a fost stornată de tot: la anulare se stornează automat
+    const issued = order.invoicesByOrderId.nodes.filter((invoice) => invoice.status === "issued");
+    const balance = issued.reduce((sum, invoice) => sum + Math.round(Number(invoice.total) * 100), 0);
+    const lastInvoice = issued.filter((invoice) => invoice.kind === "invoice").at(-1);
+    const activeInvoice = balance !== 0 && lastInvoice ? invoiceNumber(lastInvoice) : null;
 
     return (
         <>
@@ -282,9 +384,20 @@ async function OrderDetails({ params }: { params: Promise<{ numar: string }> }) 
                                 paymentStatus={order.paymentStatus}
                                 needsAddress={method?.needsAddress ?? true}
                                 needsAwb={method?.needsAwb ?? false}
+                                cancelReason={order.cancelReason}
+                                cancelledBy={order.cancelledBy}
+                                cancelledAt={order.cancelledAt}
+                                cancelDetails={order.cancelDetails}
+                                invoiceLabel={activeInvoice}
                             />
                         </div>
                     </section>
+
+                    <InvoicesSection
+                        orderId={order.id}
+                        invoices={order.invoicesByOrderId.nodes}
+                        canInvoice={order.canInvoice}
+                    />
 
                     <aside className="h-fit space-y-5 rounded-xl border bg-white p-6 text-sm">
                         <div>

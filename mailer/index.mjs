@@ -1,12 +1,14 @@
 // Poștașul: la fiecare câteva secunde ia mailurile din coadă și le trimite.
-// Trei cozi, aceeași regulă: poștașul nu atinge tabelele direct, doar funcțiile din schema mailer.
+// Patru cozi, aceeași regulă: poștașul nu atinge tabelele direct, doar funcțiile din schema mailer.
 //   - comenzile: rândurile din sales.order_status_history cu notified_at gol
 //   - contul: linkurile pentru parolă uitată și confirmarea emailului (migrația 022)
 //   - retururile: confirmarea de primire a cererii de retur (migrația 024)
+//   - facturile: fiecare factură emisă (și fiecare stornare), cu PDF-ul atașat (migrația 029);
+//     PDF-ul îl face tot poștașul, o dată, și îl arhivează în baza de date (migrația 030)
 
 import pg from "pg";
 import * as nodemailerModule from "nodemailer";
-import { buildAccountEmail, buildEmails, buildWithdrawalEmails } from "./templates.mjs";
+import { buildAccountEmail, buildEmails, buildInvoiceEmail, buildWithdrawalEmails } from "./templates.mjs";
 
 // Merge și cu versiunile vechi, și cu cele noi ale bibliotecii
 const nodemailer = nodemailerModule.default ?? nodemailerModule;
@@ -100,11 +102,58 @@ async function deliverWithdrawalEmails() {
     }
 }
 
+// PDF-ul facturii îl face invoice-pdf.mjs, cu biblioteca pdf-lib. Îl încărcăm abia aici: dacă
+// biblioteca lipsește, nu se fac doar PDF-urile (eroarea se vede în admin), restul mailurilor merg.
+let pdfTools = null;
+
+// O tură pentru PDF-uri (migrația 030): fiecare factură emisă primește PDF-ul ei, o singură dată,
+// și îl păstrăm în baza de date. De acolo îl iau mailul, pagina comenzii și adminul.
+async function renderInvoiceDocuments() {
+    const { rows } = await pool.query("select * from mailer.claim_invoice_documents(5)");
+
+    for (const row of rows) {
+        const { invoice, file_name: fileName } = row.data;
+        try {
+            pdfTools ??= await import("./invoice-pdf.mjs");
+            const pdf = await pdfTools.invoicePdf(row.data);
+            await pool.query("select mailer.complete_invoice_document($1, $2)", [row.invoice_id, Buffer.from(pdf)]);
+            console.log(`✓ ${fileName} arhivat (${Math.round(pdf.length / 1024)} KB)`);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            await pool.query("select mailer.fail_invoice_document($1, $2)", [row.invoice_id, message]);
+            console.error(`✗ PDF ${invoice.series} ${invoice.number}: ${message}. Reîncerc mai târziu.`);
+        }
+    }
+}
+
+// O tură pentru facturi pe email: PDF-ul arhivat, atașat, pentru client, cu o copie pentru tine.
+// Baza de date ne dă o factură abia după ce PDF-ul ei e arhivat.
+async function deliverInvoiceEmails() {
+    const { rows } = await pool.query("select * from mailer.claim_invoice_emails(5)");
+
+    for (const row of rows) {
+        const data = row.data;
+        const label = `${data.invoice.series} ${data.invoice.number}`;
+        try {
+            await transport.sendMail(buildInvoiceEmail(data, row.pdf, config));
+            await pool.query("select mailer.complete_invoice_email($1)", [row.invoice_id]);
+            console.log(`✓ factura ${label} → ${data.email}`);
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            await pool.query("select mailer.fail_invoice_email($1, $2)", [row.invoice_id, message]);
+            console.error(`✗ factura ${label}: ${message}. Reîncerc mai târziu.`);
+        }
+    }
+}
+
 async function loop() {
     try {
         await deliver();
         await deliverAccountEmails();
         await deliverWithdrawalEmails();
+        // Întâi PDF-ul, apoi mailul: o factură emisă acum pleacă în aceeași tură
+        await renderInvoiceDocuments();
+        await deliverInvoiceEmails();
     } catch (error) {
         // De exemplu, baza de date nu răspunde: încercăm din nou la tura următoare
         console.error("Tura a eșuat:", error instanceof Error ? error.message : error);

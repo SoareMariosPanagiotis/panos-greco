@@ -13,11 +13,13 @@ const sections = [
     { href: "/admin/livrare", title: "Livrare și plată", text: "Prețuri, livrare gratuită, metode active." },
 ];
 
-// Doar numerele care te interesează: comenzi noi, cereri de retur noi și ce lipsește din datele firmei
+// Doar numerele care te interesează: comenzi noi, cereri de retur noi, facturi de emis
+// și ce lipsește din datele firmei
 const dashboardQuery = `
   query AdminDashboard {
     allOrders(condition: { status: "new" }) { totalCount }
     allWithdrawals(condition: { status: "received" }) { totalCount }
+    allInvoices(condition: { status: "draft" }) { totalCount }
     shopInfoById(id: true) { ${SHOP_INFO_FIELDS} }
   }
 `;
@@ -25,6 +27,7 @@ const dashboardQuery = `
 type DashboardData = {
     allOrders: { totalCount: number };
     allWithdrawals: { totalCount: number };
+    allInvoices: { totalCount: number };
     shopInfoById: ShopInfo | null;
 };
 
@@ -48,6 +51,7 @@ async function AdminDashboard() {
     const data = await gql<DashboardData>(dashboardQuery, {}, token);
     const newOrders = data.allOrders.totalCount;
     const newWithdrawals = data.allWithdrawals.totalCount;
+    const drafts = data.allInvoices.totalCount;
     const missing = data.shopInfoById ? missingShopInfo(data.shopInfoById) : ["toate datele"];
 
     return (
@@ -88,6 +92,19 @@ async function AdminDashboard() {
                             : "Nicio cerere nouă de retur."
                     }
                     attention={newWithdrawals > 0}
+                />
+
+                <AttentionCard
+                    href="/admin/facturi"
+                    title="Facturi"
+                    text={
+                        drafts === 0
+                            ? "Nicio factură de emis."
+                            : drafts === 1
+                              ? "O factură așteaptă să o emiți."
+                              : `${pluralRo(drafts, "factură", "facturi")} așteaptă să le emiți.`
+                    }
+                    attention={drafts > 0}
                 />
 
                 {sections.map((section) => (

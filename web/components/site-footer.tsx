@@ -39,12 +39,12 @@ function FooterLayout({ shop }: { shop: ShopInfo | null }) {
         : [];
 
     return (
-        <footer className="mt-auto bg-olive text-white">
+        <footer className="mt-auto bg-olive text-white print:hidden">
             <div className="mx-auto grid max-w-6xl gap-10 px-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                    {/* Soarele și numele decupate direct din logo, cu aceleași proporții, dar albe */}
+                    {/* Soarele și numele decupate direct din logo, albe; soarele la jumătate din mărimea din etichetă */}
                     <Link href="/" className="inline-block" aria-label="Panos Greco, prima pagină">
-                        <Image src="/logo-white.svg" alt="Panos Greco" width={324} height={294} className="h-36 w-auto" />
+                        <Image src="/logo-white.svg" alt="Panos Greco" width={324} height={189} className="h-auto w-40" />
                     </Link>
                     <p className="mt-4 max-w-xs text-sm text-white/80">
                         Ulei de măsline extravirgin bio, din livada proprie.

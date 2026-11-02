@@ -133,3 +133,9 @@
   --color-olive: #5a6b2e;
   --color-olive-light: #f4f5ec;
 }
+
+/* Tipărirea facturilor: foaie A4, cu margini de 12 mm */
+@page {
+  size: A4;
+  margin: 12mm;
+}
