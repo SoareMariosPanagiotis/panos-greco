@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CancelOrder } from "@/components/orders/cancel-order";
 import { ReturnForm } from "@/components/returns/return-form";
 import { gql } from "@/lib/catalog";
 import { getShopInfo } from "@/lib/shop-info";
@@ -96,13 +97,32 @@ async function WithdrawalView({ params }: { params: Promise<{ id: string }> }) {
                 <h2 className="text-lg font-semibold">
                     Comanda #{form.orderNumber} <span className="font-normal text-neutral-500">din {placed}</span>
                 </h2>
-                <p className="mt-1 text-sm text-neutral-700">
-                    {form.deadline
-                        ? `Poți returna produsele până pe ${formatDeadline(form.deadline)}, fără să ne spui motivul.`
-                        : "Comanda nu a ajuns încă la tine: poți renunța oricând până la livrare și încă 14 zile după."}
-                </p>
+                {form.canCancel ? (
+                    // N-a plecat încă: cel mai simplu e anularea, cu un clic (migrația 031)
+                    <>
+                        <p className="mt-1 text-sm text-neutral-700">
+                            Comanda n-a plecat încă spre tine, așa că o poți anula direct. Anularea e imediată și
+                            primești confirmarea pe email.
+                        </p>
+                        <CancelOrder orderId={form.orderId} className="mt-3 text-sm" />
+                    </>
+                ) : (
+                    <p className="mt-1 text-sm text-neutral-700">
+                        {form.deadline
+                            ? `Poți returna produsele până pe ${formatDeadline(form.deadline)}, fără să ne spui motivul.`
+                            : `Comanda a plecat deja spre tine. Cel mai simplu e s-o refuzi la livrare${
+                                  form.paidOnDelivery ? ": plata e la livrare, deci nu plătești nimic" : ""
+                              }. Dacă o primești, ai 14 zile s-o returnezi. Ne poți anunța și de acum, cu formularul de mai jos.`}
+                    </p>
+                )}
                 <Requests requests={form.requests} />
             </div>
+
+            {form.canCancel && (
+                <p className="text-sm text-neutral-600">
+                    Vrei să renunți doar la unele produse? Completează formularul de mai jos.
+                </p>
+            )}
 
             <ReturnForm data={form} returnAddress={shop.shopAddress} />
         </div>

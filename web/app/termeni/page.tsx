@@ -52,6 +52,11 @@ async function Terms() {
                         când îți confirmăm comanda, prin mailul „Comanda ta e confirmată”.
                     </li>
                     <li>
+                        Cât timp comanda n-a plecat spre tine (sau, la ridicarea din magazin, până o ridici), o poți
+                        anula singur, din pagina comenzii, cu butonul „Anulează comanda”. După ce a plecat, nu se mai
+                        poate anula: o poți refuza la livrare sau o poți returna (punctul 6).
+                    </li>
+                    <li>
                         Putem refuza o comandă doar dintr-un motiv întemeiat, de exemplu dacă produsul nu mai e în stoc
                         sau datele de livrare sunt incomplete. Te anunțăm imediat și, dacă ai plătit deja, îți returnăm
                         banii.

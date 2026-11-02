@@ -60,3 +60,46 @@ export function pluralRo(n: number, one: string, many: string) {
     const de = n !== 0 && (n % 100 === 0 || n % 100 >= 20) ? "de " : "";
     return `${n} ${de}${many}`;
 }
+
+// De ce a fost anulată o comandă (migrația 029). Apare în admin, pe stornare și în mailul clientului.
+export const CANCEL_REASONS = {
+    customer: "la cererea clientului",
+    refused: "colet refuzat sau neplătit",
+    not_collected: "nu a fost ridicată din magazin",
+    shop: "nu o putem onora (stoc, livrare)",
+    other: "alt motiv",
+} as const;
+
+export type CancelReason = keyof typeof CANCEL_REASONS;
+
+export function isCancelReason(value: string): value is CancelReason {
+    return Object.hasOwn(CANCEL_REASONS, value);
+}
+
+export function cancelReasonLabel(reason: string | null) {
+    return reason && isCancelReason(reason) ? CANCEL_REASONS[reason] : null;
+}
+
+// Clientul își anulează singur comanda, cât timp n-a plecat (migrația 031). Motivul e opțional;
+// în baza de date ajunge textul, ca să-l citești direct în admin și în mailul tău.
+export const CUSTOMER_CANCEL_REASONS = {
+    changed_mind: "M-am răzgândit",
+    mistake: "Am comandat din greșeală",
+    change_order: "Vreau să schimb produsele sau adresa",
+    better_price: "Am găsit un preț mai bun",
+    too_slow: "Durează prea mult livrarea",
+    other: "Alt motiv",
+} as const;
+
+export type CustomerCancelReason = keyof typeof CUSTOMER_CANCEL_REASONS;
+
+export function isCustomerCancelReason(value: string): value is CustomerCancelReason {
+    return Object.hasOwn(CUSTOMER_CANCEL_REASONS, value);
+}
+
+// Cine a anulat: clientul din site sau tu din admin (gol la comenzile anulate înainte de migrația 031)
+export function cancelledByLabel(cancelledBy: string | null) {
+    if (cancelledBy === "customer") return "de client, din site";
+    if (cancelledBy === "shop") return "de tine, din admin";
+    return null;
+}

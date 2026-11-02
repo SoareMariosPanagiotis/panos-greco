@@ -33,6 +33,19 @@ async function ReturnRules() {
 
     return (
         <div className="space-y-8 rounded-xl border bg-white p-6 text-[15px] leading-relaxed text-neutral-800 sm:p-8">
+            <LegalSection id="anulare" title="Anularea comenzii, înainte să plece">
+                <p>
+                    Cât timp comanda n-a plecat spre tine (n-am predat-o curierului sau, dacă ai ales ridicarea din
+                    magazin, până o ridici), o poți anula singur, cu butonul „Anulează comanda” din pagina comenzii:
+                    din linkul primit în mailul de confirmare sau din „Contul meu”. Anularea e imediată, nu costă nimic
+                    și primești confirmarea pe email.
+                </p>
+                <p>
+                    După ce comanda a plecat, nu mai poate fi anulată. O poți refuza la livrare (dacă plătești ramburs,
+                    nu plătești nimic) sau o poți returna în 14 zile de la primire, cum scrie mai jos.
+                </p>
+            </LegalSection>
+
             <LegalSection title="Termenul de 14 zile">
                 <p>
                     Te poți retrage din contract în 14 zile, fără să ne spui motivul și fără alte costuri decât

@@ -6,7 +6,7 @@ import type { ShopInfo } from "@/lib/shop-info";
 // e bine să le citească un jurist.
 
 // Data ultimei modificări a textelor: o schimbi când modifici o pagină
-export const LEGAL_UPDATED = "1 noiembrie 2026";
+export const LEGAL_UPDATED = "2 noiembrie 2026";
 
 export function LegalPage({ title, children }: { title: string; children: ReactNode }) {
     return (

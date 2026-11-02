@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, FileText } from "lucide-react";
 import { logout } from "@/app/cont/actions";
 import { VerifyEmailNotice } from "@/components/account/verify-email-notice";
 import { OrderStatusBadge } from "@/components/order-status-badge";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { requireCustomer } from "@/lib/auth";
 import { formatPrice, gql } from "@/lib/catalog";
 import { formatPhone, formatPlace, getMyAddresses } from "@/lib/customer";
+import { parseInvoiceFiles } from "@/lib/invoices";
 import { formatOrderDate, pluralRo } from "@/lib/orders";
 
 export const metadata: Metadata = {
@@ -23,6 +24,7 @@ type MyOrderRow = {
     createdAt: string;
     total: string;
     orderItemsByOrderId: { nodes: { quantity: number }[] };
+    invoiceFiles: string | null; // facturile emise, ca JSON (migrația 030)
 };
 
 // Cerem „toate comenzile”, dar cu biletul clientului: RLS (politica orders_own)
@@ -33,10 +35,16 @@ const myOrdersQuery = `
       nodes {
         id orderNumber status createdAt total
         orderItemsByOrderId { nodes { quantity } }
+        invoiceFiles
       }
     }
   }
 `;
+
+// Are comanda o factură emisă? Atunci o semnalăm în listă: o descarcă de pe pagina comenzii.
+function hasInvoice(order: MyOrderRow) {
+    return parseInvoiceFiles(order.invoiceFiles).some((file) => file.kind === "invoice");
+}
 
 // Bucățile, ca la coș: 3 sticle de 1 L + 1 bidon de 5 L = 4 produse
 function pieces(order: MyOrderRow) {
@@ -137,6 +145,13 @@ async function AccountOverview() {
                                         <p className="text-sm text-neutral-500">
                                             {formatOrderDate(order.createdAt)} ·{" "}
                                             {pluralRo(pieces(order), "produs", "produse")}
+                                            {hasInvoice(order) && (
+                                                <span className="whitespace-nowrap">
+                                                    {" · "}
+                                                    <FileText className="inline size-3.5 align-[-2px]" aria-hidden />{" "}
+                                                    factură PDF
+                                                </span>
+                                            )}
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-4">

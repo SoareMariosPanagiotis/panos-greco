@@ -44,6 +44,7 @@ export type WithdrawalFormItem = {
 export type WithdrawalFormData =
     | {
           canWithdraw: true;
+          canCancel: boolean; // n-a plecat încă: se poate anula direct (migrația 031)
           orderId: string;
           orderNumber: number;
           status: string;

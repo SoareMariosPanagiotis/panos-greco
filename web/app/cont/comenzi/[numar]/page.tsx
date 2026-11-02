@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
+    ORDER_INVOICE_FIELDS,
     ORDER_VIEW_FIELDS,
     ORDER_VIEW_ITEM_FIELDS,
     ORDER_WITHDRAWAL_FIELDS,
@@ -12,6 +13,7 @@ import {
 } from "@/components/order-view";
 import { requireCustomer } from "@/lib/auth";
 import { gql } from "@/lib/catalog";
+import { parseInvoiceFiles } from "@/lib/invoices";
 import { parseJson } from "@/lib/withdrawals";
 
 export const metadata: Metadata = {
@@ -21,22 +23,26 @@ export const metadata: Metadata = {
 
 type MyOrder = OrderViewData & {
     id: string;
+    canCancel: boolean; // migrația 031: n-a plecat încă, clientul o poate anula
     canWithdraw: boolean;
     withdrawalDeadline: string | null;
     orderItemsByOrderId: { nodes: OrderViewItem[] };
     orderStatusHistoriesByOrderId: { nodes: OrderHistoryEntry[] };
     // Câmp calculat (migrația 026): data și starea cererilor de retur, ca JSON
     withdrawalRequests: unknown;
+    // Câmp calculat (migrația 030): facturile emise, ca JSON
+    invoiceFiles: string | null;
 };
 
 type WithdrawalRequest = { id: string; createdAt: string; status: string };
 
-// Comanda, produsele, istoricul și cererile de retur, într-o singură cerere
+// Comanda, produsele, istoricul, cererile de retur și facturile, într-o singură cerere
 const query = `
   query MyOrder($number: Int!) {
     orderByOrderNumber(orderNumber: $number) {
       ${ORDER_VIEW_FIELDS}
       ${ORDER_WITHDRAWAL_FIELDS}
+      ${ORDER_INVOICE_FIELDS}
       orderItemsByOrderId(orderBy: PRODUCT_NAME_ASC) {
         nodes { ${ORDER_VIEW_ITEM_FIELDS} }
       }
@@ -74,10 +80,12 @@ async function MyOrderView({ params }: { params: Promise<{ numar: string }> }) {
             history={order.orderStatusHistoriesByOrderId.nodes}
             withdrawal={{
                 orderId: order.id,
+                canCancel: order.canCancel,
                 canWithdraw: order.canWithdraw,
                 deadline: order.withdrawalDeadline,
                 requests: parseJson<WithdrawalRequest[]>(order.withdrawalRequests) ?? [],
             }}
+            invoices={{ orderId: order.id, files: parseInvoiceFiles(order.invoiceFiles) }}
         />
     );
 }
