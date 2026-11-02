@@ -12,6 +12,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 
 const initialState: AuthState = {
@@ -122,10 +123,9 @@ function PasswordStep({ state, formAction, pending }: StepProps) {
                         Ai uitat parola?
                     </Link>
                 </div>
-                <Input
+                <PasswordInput
                     id="password"
                     name="password"
-                    type="password"
                     autoComplete="current-password"
                     autoFocus
                     required
@@ -184,10 +184,9 @@ function RegisterStep({ state, formAction, pending }: StepProps) {
             </div>
             <div className="space-y-2">
                 <Label htmlFor="password">Parolă</Label>
-                <Input
+                <PasswordInput
                     id="password"
                     name="password"
-                    type="password"
                     autoComplete="new-password"
                     minLength={8}
                     maxLength={72}
@@ -200,10 +199,9 @@ function RegisterStep({ state, formAction, pending }: StepProps) {
             </div>
             <div className="space-y-2">
                 <Label htmlFor="passwordRepeat">Repetă parola</Label>
-                <Input
+                <PasswordInput
                     id="passwordRepeat"
                     name="passwordRepeat"
-                    type="password"
                     autoComplete="new-password"
                     minLength={8}
                     maxLength={72}

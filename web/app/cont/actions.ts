@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { gql } from "@/lib/catalog";
 import { endSession, fetchUser, homeFor, startSession } from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Formularul de intrare e o mică mașină de stări, ca la comenzi:
 //   email → password (are deja cont)
@@ -52,6 +53,8 @@ async function checkEmail(email: string): Promise<AuthState> {
     if (!EMAIL.test(email)) {
         return stateFor("email", email, "Scrie o adresă de email validă.");
     }
+    const limited = await rateLimit("checkEmail");
+    if (limited) return stateFor("email", email, limited);
 
     try {
         const data = await gql<{ accountExists: boolean }>(accountExistsQuery, { email });
@@ -76,6 +79,8 @@ async function checkPassword(email: string, formData: FormData): Promise<AuthSta
     if (!password) {
         return stateFor("password", email, "Scrie parola.");
     }
+    const limited = await rateLimit("login");
+    if (limited) return stateFor("password", email, limited);
 
     let token: string | null;
     try {
@@ -84,8 +89,9 @@ async function checkPassword(email: string, formData: FormData): Promise<AuthSta
             { email, password },
         );
         token = data.authenticate.jwtToken;
-    } catch {
-        return stateFor("password", email, "Serverul nu răspunde. Încearcă din nou.");
+    } catch (error) {
+        // De exemplu „Prea multe parole greșite...”: blocarea vine din baza de date (migrația 027)
+        return stateFor("password", email, friendlyError((error as Error).message));
     }
 
     // La pasul 1 am spus deja că emailul are cont, deci putem spune exact ce e greșit
@@ -130,6 +136,8 @@ async function createAccount(email: string, formData: FormData): Promise<AuthSta
     if (password.length < 8) return fail("Parola trebuie să aibă cel puțin 8 caractere.");
     if (password !== passwordRepeat) return fail("Parolele nu sunt identice. Scrie-le din nou.");
     if (!filled.acceptTerms) return fail("Trebuie să accepți termenii și condițiile.");
+    const limited = await rateLimit("register");
+    if (limited) return fail(limited);
 
     // Trimitem DOAR numele, emailul și parola. Rolul îl scrie baza de date: mereu client.
     let token: string | null;

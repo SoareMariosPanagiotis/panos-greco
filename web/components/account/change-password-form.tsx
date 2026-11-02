@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { changePassword, type ChangePasswordState } from "@/app/cont/security-actions";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 
 const initialState: ChangePasswordState = { done: false, error: null };
@@ -20,10 +20,9 @@ export function ChangePasswordForm({ email }: { email: string }) {
 
             <div className="space-y-2">
                 <Label htmlFor="currentPassword">Parola actuală</Label>
-                <Input
+                <PasswordInput
                     id="currentPassword"
                     name="currentPassword"
-                    type="password"
                     autoComplete="current-password"
                     required
                 />
@@ -31,10 +30,9 @@ export function ChangePasswordForm({ email }: { email: string }) {
             <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                     <Label htmlFor="password">Parola nouă</Label>
-                    <Input
+                    <PasswordInput
                         id="password"
                         name="password"
-                        type="password"
                         autoComplete="new-password"
                         minLength={8}
                         maxLength={72}
@@ -43,10 +41,9 @@ export function ChangePasswordForm({ email }: { email: string }) {
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="passwordRepeat">Repetă parola nouă</Label>
-                    <Input
+                    <PasswordInput
                         id="passwordRepeat"
                         name="passwordRepeat"
-                        type="password"
                         autoComplete="new-password"
                         minLength={8}
                         maxLength={72}

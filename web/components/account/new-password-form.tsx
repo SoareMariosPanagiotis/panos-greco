@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { resetPassword, type NewPasswordState } from "@/app/cont/security-actions";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 
 const initialState: NewPasswordState = { error: null };
@@ -20,10 +20,9 @@ export function NewPasswordForm({ token }: { token: string }) {
 
             <div className="space-y-2">
                 <Label htmlFor="password">Parola nouă</Label>
-                <Input
+                <PasswordInput
                     id="password"
                     name="password"
-                    type="password"
                     autoComplete="new-password"
                     minLength={8}
                     maxLength={72}
@@ -37,10 +36,9 @@ export function NewPasswordForm({ token }: { token: string }) {
             </div>
             <div className="space-y-2">
                 <Label htmlFor="passwordRepeat">Repetă parola nouă</Label>
-                <Input
+                <PasswordInput
                     id="passwordRepeat"
                     name="passwordRepeat"
-                    type="password"
                     autoComplete="new-password"
                     minLength={8}
                     maxLength={72}

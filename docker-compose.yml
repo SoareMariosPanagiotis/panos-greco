@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432" # doar de pe calculatorul tău, nu și din rețea
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -18,7 +18,7 @@ services:
     depends_on:
       - db
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000" # la fel: API-ul îl folosește doar site-ul
     command:
       - --connection
       - postgres://panos_api:${POSTGRES_API_PASSWORD}@db:5432/${POSTGRES_DB}
@@ -41,8 +41,8 @@ services:
     container_name: panos-mail
     restart: unless-stopped
     ports:
-      - "8025:8025" # pagina web în care vezi mailurile
-      - "1025:1025" # SMTP: pe aici programele „predau” mailurile
+      - "127.0.0.1:8025:8025" # pagina web în care vezi mailurile
+      - "127.0.0.1:1025:1025" # SMTP: pe aici programele „predau” mailurile
 
   # Poștașul: trimite singur mailurile din coadă (codul e în folderul mailer)
   mailer:

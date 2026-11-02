@@ -1,3 +1,5 @@
 .env
 node_modules/
 .idea/
+# Copiile bazei de date: conțin datele clienților
+backups/

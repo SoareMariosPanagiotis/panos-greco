@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { fetchUser, homeFor, requireCustomer, startSession } from "@/lib/auth";
 import { gql } from "@/lib/catalog";
+import { rateLimit } from "@/lib/rate-limit";
 
 // Securitatea contului (migrația 022): parolă uitată, parolă nouă,
 // confirmarea emailului și schimbarea parolei din cont.
@@ -41,6 +42,8 @@ export async function requestPasswordReset(_previous: ForgotState, formData: For
     // Capcană pentru roboți: le spunem „trimis” și nu trimitem nimic
     if (text(formData, "website")) return { sent: true, email, error: null };
     if (!EMAIL.test(email)) return { sent: false, email, error: "Scrie o adresă de email validă." };
+    const limited = await rateLimit("passwordReset");
+    if (limited) return { sent: false, email, error: limited };
 
     try {
         await gql(requestResetMutation, { email });
@@ -120,6 +123,8 @@ const resendMutation = `
 // Nu are nevoie de starea de dinainte: fiecare click trimite un mail nou
 export async function resendVerification(): Promise<ResendState> {
     const { token } = await requireCustomer();
+    const limited = await rateLimit("verificationEmail");
+    if (limited) return { sent: false, error: limited };
     try {
         await gql(resendMutation, {}, token);
         return { sent: true, error: null };
@@ -148,6 +153,8 @@ export async function changePassword(
     const repeat = String(formData.get("passwordRepeat") ?? "");
     if (password.length < 8) return { done: false, error: "Parola nouă trebuie să aibă cel puțin 8 caractere." };
     if (password !== repeat) return { done: false, error: "Parolele noi nu sunt identice. Scrie-le din nou." };
+    const limited = await rateLimit("changePassword");
+    if (limited) return { done: false, error: limited };
 
     try {
         await gql(changeMutation, { current, password }, token);

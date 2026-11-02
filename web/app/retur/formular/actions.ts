@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { gql } from "@/lib/catalog";
+import { rateLimit } from "@/lib/rate-limit";
 import { RETURN_FORM_PATH, isValidIban, normalizeIban, parseJson } from "@/lib/withdrawals";
 
 // Formularul de retur = retragerea din contract (migrația 024): găsirea comenzii fără cont și butonul de confirmare
@@ -46,6 +47,9 @@ export async function findOrderForWithdrawal(_previous: FindOrderState, formData
     if (!EMAIL.test(email)) {
         return { orderNumber, email, error: "Scrie adresa de email folosită la comandă." };
     }
+    // Fără frână, cineva ar putea încerca pe rând numere de comandă și adrese
+    const limited = await rateLimit("findOrder");
+    if (limited) return { orderNumber, email, error: limited };
 
     let orderId: string | null;
     try {
@@ -124,6 +128,8 @@ export async function requestWithdrawal(_previous: WithdrawalState, formData: Fo
     if (iban && !isValidIban(iban)) {
         return fail("IBAN-ul nu pare corect. Verifică-l (un IBAN românesc are 24 de caractere) sau lasă câmpul gol.");
     }
+    const limited = await rateLimit("returnRequest");
+    if (limited) return fail(limited);
 
     let result: { createdAt: string; email: string; statement: string } | null;
     try {

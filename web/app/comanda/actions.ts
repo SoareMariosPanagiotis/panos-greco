@@ -4,6 +4,7 @@ import { cuiDigits, findCompany, isValidCui, type Company } from "@/lib/anaf";
 import { getSession } from "@/lib/auth";
 import { gql } from "@/lib/catalog";
 import { saveMyAddress } from "@/lib/customer";
+import { rateLimit } from "@/lib/rate-limit";
 
 // ---------- Prețurile reale pentru produsele din coș ----------
 
@@ -164,6 +165,8 @@ export async function submitOrder(
     if (values.wantsInvoice && !isValidCui(cuiDigits(values.companyCui))) {
         return { error: "CUI-ul firmei nu este valid. Verifică cifrele.", values };
     }
+    const limited = await rateLimit("placeOrder");
+    if (limited) return { error: limited, values };
 
     // Clientul conectat trimite și biletul lui: place_order ia user_id din bilet și pune
     // comanda în contul lui. Adminul care testează magazinul comandă ca un vizitator.
@@ -218,6 +221,8 @@ export async function lookupCompany(cui: string): Promise<CompanyLookup> {
     if (!isValidCui(digits)) {
         return { status: "invalid", message: "CUI-ul nu este valid. Verifică cifrele." };
     }
+    const limited = await rateLimit("companyLookup");
+    if (limited) return { status: "error", message: limited };
 
     try {
         const company = await findCompany(digits);
