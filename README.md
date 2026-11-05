@@ -39,7 +39,7 @@ Toate serviciile, în afară de site, rulează în Docker Compose. Porturile lor
 - Conturi de client: adrese salvate, istoricul comenzilor, confirmarea emailului
 - Panou de administrare pentru comenzi, facturi și stări
 - Facturare cu numerotare fără goluri, stornare automată la anulare sau retur, facturi PDF pe email și pe site
-- Anularea comenzii de către client până la emiterea AWB-ului; formular de retragere conform OUG 34/2014
+- Anularea comenzii de către client până la emiterea AWB-ului; formular de retragere conform OUG 34/2014, modificată prin OUG 18/2026
 - Emailuri tranzacționale prin coadă în baza de date (se reîncearcă singure dacă SMTP-ul pică)
 - Backup și restaurare a bazei de date dintr-o singură comandă
 
