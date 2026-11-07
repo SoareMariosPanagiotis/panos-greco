@@ -33,7 +33,7 @@ async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
     return (
         <>
             {/* Sus: tot ce trebuie ca să cumperi, fără scroll */}
-            <div className="mt-6 grid gap-10 md:grid-cols-2">
+            <div className="mt-4 grid gap-6 sm:mt-6 md:grid-cols-2 md:gap-10">
                 <div className="relative aspect-square overflow-hidden rounded-xl border bg-white">
                     {product.imageUrl ? (
                         <Image
@@ -52,7 +52,7 @@ async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
 
                 <div>
                     <p className="text-sm text-neutral-500">{product.categoryByCategoryId?.name}</p>
-                    <h1 className="mt-1 text-3xl font-bold">{product.name}</h1>
+                    <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{product.name}</h1>
                     {product.isOrganic && (
                         <Badge className="mt-3 bg-green-700 text-white">BIO</Badge>
                     )}
@@ -67,8 +67,8 @@ async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
 
             {/* Jos: povestea și detaliile, pentru cine vrea să citească */}
             {product.description && (
-                <section className="mt-16 border-t pt-10">
-                    <h2 className="text-2xl font-bold text-olive">Descriere</h2>
+                <section className="mt-10 border-t pt-8 sm:mt-16 sm:pt-10">
+                    <h2 className="text-xl font-bold text-olive sm:text-2xl">Descriere</h2>
                     <p className="mt-4 max-w-3xl whitespace-pre-line leading-relaxed text-neutral-700">
                         {product.description}
                     </p>
@@ -88,7 +88,8 @@ async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
 
 export default function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
     return (
-        <main className="mx-auto w-full max-w-6xl px-8 py-10">
+        // Pe telefon margini de 16 px (px-4); de la sm, ca pe calculator
+        <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
             <Link href="/" className="text-sm text-olive hover:underline">
                 ← Înapoi la produse
             </Link>

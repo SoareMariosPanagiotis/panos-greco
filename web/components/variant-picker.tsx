@@ -68,7 +68,8 @@ export function VariantPicker({ productName, productSlug, variants }: Props) {
                     <button
                         type="button"
                         onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                        className="px-3 py-2 text-lg"
+                        // size-11 = 44 px: mărimea minimă recomandată pentru ceva apăsat cu degetul
+                        className="flex size-11 items-center justify-center text-lg"
                         aria-label="Scade cantitatea"
                     >
                         −
@@ -77,7 +78,7 @@ export function VariantPicker({ productName, productSlug, variants }: Props) {
                     <button
                         type="button"
                         onClick={() => setQuantity((q) => q + 1)}
-                        className="px-3 py-2 text-lg"
+                        className="flex size-11 items-center justify-center text-lg"
                         aria-label="Crește cantitatea"
                     >
                         +
