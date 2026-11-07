@@ -157,7 +157,7 @@ async function ReturnRules() {
 
 export default function ReturnPolicyPage() {
     return (
-        <main className="mx-auto w-full max-w-5xl space-y-12 px-8 py-10">
+        <main className="mx-auto w-full max-w-5xl space-y-12 px-4 py-6 sm:px-8 sm:py-10">
             {/* Sus: tot ce trebuie să știi, dintr-o privire */}
             <section className="rounded-2xl bg-white p-8 sm:p-10">
                 <p className="text-sm font-semibold uppercase tracking-wide text-olive">Retur</p>

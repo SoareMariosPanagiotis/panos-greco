@@ -10,7 +10,7 @@ export const LEGAL_UPDATED = "2 noiembrie 2026";
 
 export function LegalPage({ title, children }: { title: string; children: ReactNode }) {
     return (
-        <main className="mx-auto w-full max-w-3xl px-8 py-10">
+        <main className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-8 sm:py-10">
             <h1 className="text-3xl font-bold text-olive">{title}</h1>
             <p className="mt-2 text-sm text-neutral-500">Ultima actualizare: {LEGAL_UPDATED}</p>
             <div className="mt-8 space-y-8 rounded-xl border bg-white p-6 text-[15px] leading-relaxed text-neutral-800 sm:p-8">

@@ -96,7 +96,7 @@ async function OtherWays() {
 
 export default function ReturnFormStartPage() {
     return (
-        <main className="mx-auto w-full max-w-5xl space-y-8 px-8 py-10">
+        <main className="mx-auto w-full max-w-5xl space-y-8 px-4 py-6 sm:px-8 sm:py-10">
             <div className="max-w-3xl">
                 <h1 className="text-3xl font-bold text-olive">Formular de retur</h1>
                 <p className="mt-3 text-neutral-700">

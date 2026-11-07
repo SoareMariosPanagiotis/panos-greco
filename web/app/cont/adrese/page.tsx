@@ -79,7 +79,7 @@ async function AddressBook() {
 
 export default function AddressesPage() {
     return (
-        <main className="mx-auto w-full max-w-4xl px-8 py-10">
+        <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-8 sm:py-10">
             <Link href="/cont" className="text-sm text-olive hover:underline">
                 ← Contul meu
             </Link>

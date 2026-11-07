@@ -40,7 +40,7 @@ function FooterLayout({ shop }: { shop: ShopInfo | null }) {
 
     return (
         <footer className="mt-auto bg-olive text-white print:hidden">
-            <div className="mx-auto grid max-w-6xl gap-10 px-8 py-12 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-2 sm:gap-10 sm:px-8 sm:py-12 lg:grid-cols-4">
                 <div>
                     {/* Soarele și numele decupate direct din logo, albe; soarele la jumătate din mărimea din etichetă */}
                     <Link href="/" className="inline-block" aria-label="Panos Greco, prima pagină">
@@ -105,7 +105,7 @@ function FooterLayout({ shop }: { shop: ShopInfo | null }) {
             </div>
 
             <div className="border-t border-white/20">
-                <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-8 py-6">
+                <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-8">
                     <p className="max-w-xl text-xs leading-relaxed text-white/80">{identity.join(" · ")}</p>
                     <div className="flex flex-wrap items-center gap-4 text-xs">
                         <a href="https://anpc.ro" target="_blank" rel="noopener noreferrer" className="hover:underline">

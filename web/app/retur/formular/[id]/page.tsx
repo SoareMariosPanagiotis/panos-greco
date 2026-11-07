@@ -131,7 +131,7 @@ async function WithdrawalView({ params }: { params: Promise<{ id: string }> }) {
 
 export default function WithdrawalPage({ params }: { params: Promise<{ id: string }> }) {
     return (
-        <main className="mx-auto w-full max-w-3xl space-y-6 px-8 py-10">
+        <main className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6 sm:px-8 sm:py-10">
             <div>
                 <Link href={RETURN_FORM_PATH} className="text-sm text-olive hover:underline">
                     ← Altă comandă

@@ -67,7 +67,7 @@ async function AccountOverview() {
         <>
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-olive">Contul meu</h1>
+                    <h1 className="text-2xl font-bold text-olive sm:text-3xl">Contul meu</h1>
                     <p className="mt-1 text-neutral-600">Salut, {user.firstName ?? user.email}!</p>
                 </div>
                 <form action={logout}>
@@ -79,8 +79,8 @@ async function AccountOverview() {
 
             {!user.emailVerifiedAt && <VerifyEmailNotice email={user.email} />}
 
-            <div className="mt-8 grid gap-6 sm:grid-cols-2">
-                <section className="rounded-xl border bg-white p-6">
+            <div className="mt-6 grid gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-6">
+                <section className="rounded-xl border bg-white p-4 sm:p-6">
                     <div className="flex items-baseline justify-between gap-4">
                         <h2 className="text-lg font-semibold">Datele mele</h2>
                         <Link href="/cont/date" className="text-sm font-medium text-olive hover:underline">
@@ -99,7 +99,7 @@ async function AccountOverview() {
                     </dl>
                 </section>
 
-                <section className="rounded-xl border bg-white p-6">
+                <section className="rounded-xl border bg-white p-4 sm:p-6">
                     <div className="flex items-baseline justify-between gap-4">
                         <h2 className="text-lg font-semibold">Adresa de livrare</h2>
                         <Link href="/cont/adrese" className="text-sm font-medium text-olive hover:underline">
@@ -123,7 +123,7 @@ async function AccountOverview() {
                 </section>
             </div>
 
-            <section className="mt-6 rounded-xl border bg-white p-6">
+            <section className="mt-4 rounded-xl border bg-white p-4 sm:mt-6 sm:p-6">
                 <h2 className="text-lg font-semibold">Comenzile mele</h2>
                 {orders.length === 0 ? (
                     <p className="mt-4 text-sm text-neutral-600">
@@ -138,9 +138,11 @@ async function AccountOverview() {
                             <li key={order.id}>
                                 <Link
                                     href={`/cont/comenzi/${order.orderNumber}`}
-                                    className="-mx-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-lg px-2 py-4 transition hover:bg-olive-light"
+                                    // Stânga: comanda; dreapta: starea și prețul, iar săgeata la capăt.
+                                    // Pe telefon starea stă deasupra prețului (flex-col), ca rândul să nu se rupă.
+                                    className="-mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-4 transition hover:bg-olive-light sm:gap-6"
                                 >
-                                    <div>
+                                    <div className="min-w-0 flex-1">
                                         <p className="font-medium">Comanda #{order.orderNumber}</p>
                                         <p className="text-sm text-neutral-500">
                                             {formatOrderDate(order.createdAt)} ·{" "}
@@ -154,11 +156,11 @@ async function AccountOverview() {
                                             )}
                                         </p>
                                     </div>
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex shrink-0 flex-col items-end gap-1 sm:flex-row sm:items-center sm:gap-4">
                                         <OrderStatusBadge status={order.status} />
-                                        <span className="font-semibold">{formatPrice(order.total)}</span>
-                                        <ChevronRight className="size-4 text-neutral-400" />
+                                        <span className="font-semibold whitespace-nowrap">{formatPrice(order.total)}</span>
                                     </div>
+                                    <ChevronRight className="size-4 shrink-0 text-neutral-400" />
                                 </Link>
                             </li>
                         ))}
@@ -175,7 +177,7 @@ async function AccountOverview() {
 
 export default function AccountPage() {
     return (
-        <main className="mx-auto w-full max-w-4xl px-8 py-10">
+        <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-8 sm:py-10">
             <Suspense fallback={<p>Se încarcă contul...</p>}>
                 <AccountOverview />
             </Suspense>

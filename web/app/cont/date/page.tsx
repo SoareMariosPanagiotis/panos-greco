@@ -28,7 +28,7 @@ async function ProfileLoader() {
 
 export default function ProfilePage() {
     return (
-        <main className="mx-auto w-full max-w-xl px-8 py-10">
+        <main className="mx-auto w-full max-w-xl px-4 py-6 sm:px-8 sm:py-10">
             <Link href="/cont" className="text-sm text-olive hover:underline">
                 ← Contul meu
             </Link>

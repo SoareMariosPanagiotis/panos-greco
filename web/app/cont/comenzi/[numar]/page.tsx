@@ -92,7 +92,7 @@ async function MyOrderView({ params }: { params: Promise<{ numar: string }> }) {
 
 export default function MyOrderPage({ params }: { params: Promise<{ numar: string }> }) {
     return (
-        <main className="mx-auto w-full max-w-4xl px-8 py-10">
+        <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-8 sm:py-10">
             <Suspense fallback={<p>Se încarcă comanda...</p>}>
                 <MyOrderView params={params} />
             </Suspense>

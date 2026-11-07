@@ -17,7 +17,7 @@ async function NewAddress() {
 
 export default function NewAddressPage() {
     return (
-        <main className="mx-auto w-full max-w-xl px-8 py-10">
+        <main className="mx-auto w-full max-w-xl px-4 py-6 sm:px-8 sm:py-10">
             <Link href="/cont/adrese" className="text-sm text-olive hover:underline">
                 ← Adresele mele
             </Link>

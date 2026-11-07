@@ -67,7 +67,7 @@ async function ReceiptView({ params }: { params: Promise<{ id: string }> }) {
 
 export default function ConfirmationPage({ params }: { params: Promise<{ id: string }> }) {
     return (
-        <main className="mx-auto w-full max-w-4xl px-8 py-10">
+        <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-8 sm:py-10">
             <Suspense fallback={<p>Se încarcă comanda...</p>}>
                 <ReceiptView params={params} />
             </Suspense>
