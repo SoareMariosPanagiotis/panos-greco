@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/graphql";
+const API_URL = "http://localhost:5050/graphql"; // portul de pe calculator; în container API-ul ascultă tot pe 5000
 
 // Trimite o interogare GraphQL la API și întoarce datele.
 // Dacă primește un bilet (token), îl pune în header-ul Authorization.

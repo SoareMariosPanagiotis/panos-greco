@@ -18,7 +18,7 @@ services:
     depends_on:
       - db
     ports:
-      - "127.0.0.1:5000:5000" # la fel: API-ul îl folosește doar site-ul
+      - "127.0.0.1:5050:5000" # la fel: API-ul îl folosește doar site-ul (5000 îl iau uneori alte programe)
     command:
       - --connection
       - postgres://panos_api:${POSTGRES_API_PASSWORD}@db:5432/${POSTGRES_DB}
