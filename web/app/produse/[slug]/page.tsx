@@ -1,11 +1,12 @@
 import { Suspense } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ProductGallery } from "@/components/product-gallery";
 import { PRODUCT_LABEL_FIELDS, ProductLabel, type ProductLabelData } from "@/components/product-label";
 import { Badge } from "@/components/ui/badge";
 import { VariantPicker } from "@/components/variant-picker";
 import { formatSize, gql, type ProductDetails } from "@/lib/catalog";
+import { PRODUCT_IMAGE_FIELDS, type ProductImage } from "@/lib/product-images";
 
 const query = `
   query ProductPage($slug: String!) {
@@ -13,8 +14,8 @@ const query = `
       name
       description
       isOrganic
-      imageUrl
       categoryByCategoryId { name }
+      ${PRODUCT_IMAGE_FIELDS}
       productVariantsByProductId(orderBy: PACK_SIZE_ASC) {
         nodes { id packSize packUnit price }
       }
@@ -25,7 +26,11 @@ const query = `
 
 async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
-    const data = await gql<{ productBySlug: (ProductDetails & ProductLabelData) | null }>(query, { slug });
+    const data = await gql<{
+        productBySlug:
+            | (ProductDetails & ProductLabelData & { productImagesByProductId: { nodes: ProductImage[] } })
+            | null;
+    }>(query, { slug });
     const product = data.productBySlug;
 
     if (!product) notFound();
@@ -34,21 +39,7 @@ async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
         <>
             {/* Sus: tot ce trebuie ca să cumperi, fără scroll */}
             <div className="mt-4 grid gap-6 sm:mt-6 md:grid-cols-2 md:gap-10">
-                <div className="relative aspect-square overflow-hidden rounded-xl border bg-white">
-                    {product.imageUrl ? (
-                        <Image
-                            src={product.imageUrl}
-                            alt={product.name}
-                            fill
-                            sizes="(min-width: 768px) 50vw, 100vw"
-                            className="object-cover"
-                        />
-                    ) : (
-                        <div className="flex h-full items-center justify-center bg-olive-light text-8xl font-bold text-olive/30">
-                            {product.name[0]}
-                        </div>
-                    )}
-                </div>
+                <ProductGallery images={product.productImagesByProductId.nodes} productName={product.name} />
 
                 <div>
                     <p className="text-sm text-neutral-500">{product.categoryByCategoryId?.name}</p>

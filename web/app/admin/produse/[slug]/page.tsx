@@ -5,10 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { DeleteProductForm } from "@/components/admin/delete-product-form";
 import { NewVariantForm } from "@/components/admin/new-variant-form";
 import { ProductDetailsForm } from "@/components/admin/product-details-form";
+import { ProductImagesManager } from "@/components/admin/product-images-manager";
 import { ProductLabelForm } from "@/components/admin/product-label-form";
 import { VariantEditRow, type AdminVariant } from "@/components/admin/variant-edit-row";
 import { gql } from "@/lib/catalog";
 import { requireAdmin } from "@/lib/auth";
+import { PRODUCT_IMAGE_FIELDS, type ProductImage } from "@/lib/product-images";
 
 type AdminProduct = {
     id: string;
@@ -21,6 +23,7 @@ type AdminProduct = {
     categoryId: string;
     categoryByCategoryId: { name: string } | null;
     productVariantsByProductId: { nodes: AdminVariant[] };
+    productImagesByProductId: { nodes: ProductImage[] }; // galeria (migrația 032)
     // Eticheta (migrația 025)
     ingredients: string | null;
     mayContain: string | null;
@@ -65,6 +68,7 @@ const query = `
       vatRate
       categoryId
       categoryByCategoryId { name }
+      ${PRODUCT_IMAGE_FIELDS}
       productVariantsByProductId(orderBy: PACK_SIZE_ASC) {
         nodes { id packSize packUnit price stock barcode }
       }
@@ -124,6 +128,15 @@ async function ProductEditor({ params }: { params: Promise<{ slug: string }> }) 
                         isOrganic: product.isOrganic,
                         isActive: product.isActive,
                     }}
+                />
+            </div>
+
+            <h2 className="mt-10 font-semibold">Poze</h2>
+            <div className="mt-3">
+                <ProductImagesManager
+                    productId={product.id}
+                    productName={product.name}
+                    images={product.productImagesByProductId.nodes}
                 />
             </div>
 

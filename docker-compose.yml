@@ -35,6 +35,9 @@ services:
       - auth,catalog,sales
       - --watch
       - --enhance-graphiql
+      # Pozele de produs ajung la API ca text base64 (cam 1 MB); implicit PostGraphile primește doar 100 kB
+      - --body-size-limit
+      - 5MB
 
   # Oficiul poștal de test: prinde toate mailurile și le arată pe http://localhost:8025
   mail:

@@ -44,7 +44,6 @@ export type ProductDetails = {
     name: string;
     description: string | null;
     isOrganic: boolean;
-    imageUrl: string | null;
     categoryByCategoryId: { name: string } | null;
     productVariantsByProductId: { nodes: Variant[] };
 };
