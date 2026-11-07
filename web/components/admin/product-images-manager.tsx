@@ -8,6 +8,7 @@ import {
     deleteProductImage,
     makeProductImageMain,
     updateProductImageAlt,
+    updateProductImageVariant,
     type ImageActionState,
 } from "@/app/admin/produse/image-actions";
 import { Button } from "@/components/ui/button";
@@ -17,14 +18,17 @@ import { imageSrc, type ProductImage } from "@/lib/product-images";
 const initialState: ImageActionState = { status: "idle", message: "" };
 const MAX_IMAGES = 12; // aceeași limită ca în baza de date (migrația 032)
 
-type CardProps = { image: ProductImage; isMain: boolean; productName: string };
+export type SizeOption = { id: string; label: string }; // o mărime a produsului, ex. „5 l”
 
-// O poză din galerie: descrierea ei, „fă-o principală” și ștergerea
-function ImageCard({ image, isMain, productName }: CardProps) {
+type CardProps = { image: ProductImage; isMain: boolean; productName: string; sizes: SizeOption[] };
+
+// O poză din galerie: mărimea, descrierea, „fă-o principală” și ștergerea
+function ImageCard({ image, isMain, productName, sizes }: CardProps) {
     const [deleteState, deleteAction, deleting] = useActionState(deleteProductImage, initialState);
     const [mainState, mainAction, makingMain] = useActionState(makeProductImageMain, initialState);
     const [altState, altAction, savingAlt] = useActionState(updateProductImageAlt, initialState);
-    const error = [deleteState, mainState, altState].find((state) => state.status === "error")?.message;
+    const [sizeState, sizeAction, savingSize] = useActionState(updateProductImageVariant, initialState);
+    const error = [deleteState, mainState, altState, sizeState].find((state) => state.status === "error")?.message;
 
     return (
         <li className="overflow-hidden rounded-xl border bg-white">
@@ -43,6 +47,28 @@ function ImageCard({ image, isMain, productName }: CardProps) {
                 )}
             </div>
             <div className="space-y-2 p-3">
+                {/* Mărimea: pe site, când clientul alege mărimea, galeria sare la poza ei.
+                    Se salvează imediat ce alegi (requestSubmit trimite formularul). */}
+                {sizes.length > 1 && (
+                    <form action={sizeAction}>
+                        <input type="hidden" name="id" value={image.id} />
+                        <select
+                            name="variantId"
+                            defaultValue={image.variantId ?? ""}
+                            disabled={savingSize}
+                            onChange={(event) => event.currentTarget.form?.requestSubmit()}
+                            aria-label="Mărimea din poză"
+                            className="h-8 w-full rounded-lg border bg-white px-2 text-sm"
+                        >
+                            <option value="">Toate mărimile</option>
+                            {sizes.map((size) => (
+                                <option key={size.id} value={size.id}>
+                                    Doar {size.label}
+                                </option>
+                            ))}
+                        </select>
+                    </form>
+                )}
                 {/* Descrierea pozei: o citesc Google și cititoarele de ecran */}
                 <form action={altAction} className="flex gap-2">
                     <input type="hidden" name="id" value={image.id} />
@@ -97,11 +123,11 @@ function ImageCard({ image, isMain, productName }: CardProps) {
     );
 }
 
-type Props = { productId: string; productName: string; images: ProductImage[] };
+type Props = { productId: string; productName: string; images: ProductImage[]; sizes: SizeOption[] };
 
 // Galeria unui produs, în admin. Pozele se trimit pe rând la /admin/produse/imagini
 // (o rută, nu un Server Action, pentru că un fișier de câțiva MB trece de limita de 1 MB a acțiunilor).
-export function ProductImagesManager({ productId, productName, images }: Props) {
+export function ProductImagesManager({ productId, productName, images, sizes }: Props) {
     const router = useRouter();
     const inputRef = useRef<HTMLInputElement>(null);
     const [busy, setBusy] = useState(false);
@@ -141,12 +167,20 @@ export function ProductImagesManager({ productId, productName, images }: Props) 
             <p className="text-sm text-neutral-600">
                 Prima poză e cea principală: apare pe carduri și prima pe pagina produsului. Arată cel mai
                 bine pătrată, pe fundal simplu. Poți alege mai multe poze deodată (cel mult {MAX_IMAGES}).
+                {sizes.length > 1 &&
+                    " Leagă poza de o mărime și, pe site, la alegerea mărimii se arată poza ei."}
             </p>
 
             {images.length > 0 ? (
                 <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                     {images.map((image, index) => (
-                        <ImageCard key={image.id} image={image} isMain={index === 0} productName={productName} />
+                        <ImageCard
+                            key={image.id}
+                            image={image}
+                            isMain={index === 0}
+                            productName={productName}
+                            sizes={sizes}
+                        />
                     ))}
                 </ul>
             ) : (

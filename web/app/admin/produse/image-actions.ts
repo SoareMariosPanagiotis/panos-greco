@@ -59,3 +59,19 @@ export async function updateProductImageAlt(_prev: ImageActionState, formData: F
         { id, alt: alt || null },
     );
 }
+
+// Mărimea căreia îi aparține poza (migrația 033); gol = poză generală a produsului
+export async function updateProductImageVariant(_prev: ImageActionState, formData: FormData) {
+    const id = readId(formData);
+    if (!id) return { status: "error", message: "Poză necunoscută." } as ImageActionState;
+    const variantId = String(formData.get("variantId") ?? "");
+    if (variantId && !UUID.test(variantId)) {
+        return { status: "error", message: "Mărime necunoscută." } as ImageActionState;
+    }
+    return run(
+        `mutation UpdateProductImageVariant($id: UUID!, $variantId: UUID) {
+           updateProductImageById(input: { id: $id, productImagePatch: { variantId: $variantId } }) { productImage { id } }
+         }`,
+        { id, variantId: variantId || null },
+    );
+}

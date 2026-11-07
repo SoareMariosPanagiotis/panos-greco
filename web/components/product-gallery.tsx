@@ -1,16 +1,19 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { imageSrc, type ProductImage } from "@/lib/product-images";
 
-type Props = { images: ProductImage[]; productName: string };
+type Props = {
+    images: ProductImage[];
+    productName: string;
+    current: number; // ce poză se vede mare
+    onSelect: (index: number) => void; // click pe o miniatură
+};
 
 // Galeria de pe pagina produsului: poza mare și, dedesubt, miniaturile (dacă sunt mai multe).
-// Pe telefon, rândul de miniaturi se derulează cu degetul, ca rândul de categorii.
-export function ProductGallery({ images, productName }: Props) {
-    const [current, setCurrent] = useState(0);
-
+// Nu ține singură minte ce poză se vede: o hotărăște ProductShowcase, ca să o poată schimba
+// și când clientul alege altă mărime. Pe telefon, miniaturile se derulează cu degetul.
+export function ProductGallery({ images, productName, current, onSelect }: Props) {
     // Fără poze: prima literă din nume, ca până acum
     if (images.length === 0) {
         return (
@@ -43,7 +46,7 @@ export function ProductGallery({ images, productName }: Props) {
                         <button
                             key={image.id}
                             type="button"
-                            onClick={() => setCurrent(index)}
+                            onClick={() => onSelect(index)}
                             aria-label={`Poza ${index + 1} din ${images.length}`}
                             aria-current={index === current ? "true" : undefined}
                             className={`relative size-16 shrink-0 overflow-hidden rounded-lg border-2 bg-white transition sm:size-20 ${

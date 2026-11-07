@@ -9,11 +9,20 @@ type Props = {
     productName: string;
     productSlug: string;
     variants: Variant[];
+    // Opțional: cine folosește componenta poate ține el minte mărimea (de ex. ca să schimbe și poza)
+    selectedId?: string;
+    onSelect?: (variantId: string) => void;
 };
 
-export function VariantPicker({ productName, productSlug, variants }: Props) {
+export function VariantPicker({ productName, productSlug, variants, selectedId: chosenId, onSelect }: Props) {
     const { addItem, setDrawerOpen } = useCart();
-    const [selectedId, setSelectedId] = useState(variants[0]?.id);
+    const [ownId, setOwnId] = useState(variants[0]?.id);
+    const selectedId = chosenId ?? ownId;
+
+    function setSelectedId(id: string) {
+        setOwnId(id);
+        onSelect?.(id);
+    }
     const [quantity, setQuantity] = useState(1);
 
     const selected = variants.find((variant) => variant.id === selectedId) ?? variants[0];

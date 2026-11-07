@@ -1,10 +1,9 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ProductGallery } from "@/components/product-gallery";
 import { PRODUCT_LABEL_FIELDS, ProductLabel, type ProductLabelData } from "@/components/product-label";
+import { ProductShowcase } from "@/components/product-showcase";
 import { Badge } from "@/components/ui/badge";
-import { VariantPicker } from "@/components/variant-picker";
 import { formatSize, gql, type ProductDetails } from "@/lib/catalog";
 import { PRODUCT_IMAGE_FIELDS, type ProductImage } from "@/lib/product-images";
 
@@ -38,23 +37,16 @@ async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
     return (
         <>
             {/* Sus: tot ce trebuie ca să cumperi, fără scroll */}
-            <div className="mt-4 grid gap-6 sm:mt-6 md:grid-cols-2 md:gap-10">
-                <ProductGallery images={product.productImagesByProductId.nodes} productName={product.name} />
-
-                <div>
-                    <p className="text-sm text-neutral-500">{product.categoryByCategoryId?.name}</p>
-                    <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{product.name}</h1>
-                    {product.isOrganic && (
-                        <Badge className="mt-3 bg-green-700 text-white">BIO</Badge>
-                    )}
-
-                    <VariantPicker
-                        productName={product.name}
-                        productSlug={slug}
-                        variants={product.productVariantsByProductId.nodes}
-                    />
-                </div>
-            </div>
+            <ProductShowcase
+                images={product.productImagesByProductId.nodes}
+                variants={product.productVariantsByProductId.nodes}
+                productName={product.name}
+                productSlug={slug}
+            >
+                <p className="text-sm text-neutral-500">{product.categoryByCategoryId?.name}</p>
+                <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{product.name}</h1>
+                {product.isOrganic && <Badge className="mt-3 bg-green-700 text-white">BIO</Badge>}
+            </ProductShowcase>
 
             {/* Jos: povestea și detaliile, pentru cine vrea să citească */}
             {product.description && (

@@ -8,7 +8,7 @@ import { ProductDetailsForm } from "@/components/admin/product-details-form";
 import { ProductImagesManager } from "@/components/admin/product-images-manager";
 import { ProductLabelForm } from "@/components/admin/product-label-form";
 import { VariantEditRow, type AdminVariant } from "@/components/admin/variant-edit-row";
-import { gql } from "@/lib/catalog";
+import { formatSize, gql } from "@/lib/catalog";
 import { requireAdmin } from "@/lib/auth";
 import { PRODUCT_IMAGE_FIELDS, type ProductImage } from "@/lib/product-images";
 
@@ -137,6 +137,10 @@ async function ProductEditor({ params }: { params: Promise<{ slug: string }> }) 
                     productId={product.id}
                     productName={product.name}
                     images={product.productImagesByProductId.nodes}
+                    sizes={variants.map((variant) => ({
+                        id: variant.id,
+                        label: formatSize(variant.packSize, variant.packUnit),
+                    }))}
                 />
             </div>
 
