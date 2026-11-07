@@ -2,6 +2,7 @@ services:
   db:
     image: postgres:17
     container_name: panos-db
+    restart: unless-stopped # pornește singur după un restart al calculatorului
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
