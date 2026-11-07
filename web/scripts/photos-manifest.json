@@ -1,0 +1,325 @@
+{
+  "_despre": "Pozele de produs pentru npm run photos:import. Căile pornesc din folderul dat la comandă (la noi, „Foto banner”). Ordinea contează: prima poză e cea principală. „size” leagă poza de o mărime (migrația 033).",
+  "products": [
+    {
+      "slug": "ulei-de-masline-extravirgin-bio",
+      "photos": [
+        {
+          "file": "Site - poze premium/Ulei de măsline extravirgin bio/5 - toată gama.jpg",
+          "alt": "Uleiul de măsline extravirgin bio Panos Greco: 250 ml, 500 ml, 1 l și 3 l"
+        },
+        {
+          "file": "Site - poze premium/Ulei de măsline extravirgin bio/1 - 250 ml.jpg",
+          "size": "250 ml",
+          "alt": "Ulei de măsline extravirgin bio Panos Greco, sticlă de 250 ml"
+        },
+        {
+          "file": "Site - poze premium/Ulei de măsline extravirgin bio/2 - 500 ml.jpg",
+          "size": "500 ml",
+          "alt": "Ulei de măsline extravirgin bio Panos Greco, sticlă de 500 ml"
+        },
+        {
+          "file": "Site - poze premium/Ulei de măsline extravirgin bio/3 - 1 l.jpg",
+          "size": "1 l",
+          "alt": "Ulei de măsline extravirgin bio Panos Greco, sticlă de 1 l"
+        },
+        {
+          "file": "Site - poze premium/Ulei de măsline extravirgin bio/4 - 3 l.jpg",
+          "size": "3 l",
+          "alt": "Ulei de măsline extravirgin bio Panos Greco, canistră de 3 l"
+        },
+        {
+          "file": "Site - poze produse/Ulei de măsline extravirgin bio/1 - 250 ml.jpg",
+          "size": "250 ml",
+          "alt": "Sticla de 250 ml, pe fundal alb: eticheta de aproape"
+        },
+        {
+          "file": "Site - poze produse/Ulei de măsline extravirgin bio/2 - 500 ml.jpg",
+          "size": "500 ml",
+          "alt": "Sticla de 500 ml, pe fundal alb: eticheta de aproape"
+        },
+        {
+          "file": "Site - poze produse/Ulei de măsline extravirgin bio/3 - 1 l.jpg",
+          "size": "1 l",
+          "alt": "Sticla de 1 l, pe fundal alb: eticheta de aproape"
+        },
+        {
+          "file": "Site - poze produse/Ulei de măsline extravirgin bio/4 - 3 l.jpg",
+          "size": "3 l",
+          "alt": "Canistra de 3 l, pe fundal alb: eticheta de aproape"
+        }
+      ]
+    },
+    {
+      "slug": "masline-kalamon",
+      "photos": [
+        {
+          "file": "Site - poze premium/Măsline Kalamon/1 - 200 g.jpg",
+          "size": "200 g",
+          "alt": "Măsline Kalamon Panos Greco, borcan, pe o masă de piatră"
+        },
+        {
+          "file": "Site - poze premium/Măsline Kalamon/2 - 2 kg.jpg",
+          "size": "2 kg",
+          "alt": "Măsline Kalamon Panos Greco, găleată de 2 kg, pe o masă de piatră"
+        },
+        {
+          "file": "Site - poze produse/Măsline Kalamon/1 - 200 g.jpg",
+          "size": "200 g",
+          "alt": "Borcanul de măsline Kalamon, pe fundal alb"
+        },
+        {
+          "file": "Site - poze produse/Măsline Kalamon/2 - 2 kg.jpg",
+          "size": "2 kg",
+          "alt": "Găleata de 2 kg de măsline Kalamon, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "masline-kalamon-feliate",
+      "photos": [
+        {
+          "file": "Site - poze premium/Măsline Kalamon feliate/1.jpg",
+          "alt": "Măsline Kalamon feliate Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Măsline Kalamon feliate/1.jpg",
+          "alt": "Măsline Kalamon feliate Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "masline-kalamon-fara-samburi",
+      "photos": [
+        {
+          "file": "Site - poze premium/Măsline Kalamon fără sâmbure/1.jpg",
+          "alt": "Măsline Kalamon fără sâmbure Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Măsline Kalamon fără sâmbure/1.jpg",
+          "alt": "Măsline Kalamon fără sâmbure Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "pasta-de-masline",
+      "photos": [
+        {
+          "file": "Site - poze premium/Pastă de măsline/1.jpg",
+          "alt": "Pastă de măsline tradițională Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Pastă de măsline/1.jpg",
+          "alt": "Pastă de măsline tradițională Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "crema-otet-balsamic-miere",
+      "photos": [
+        {
+          "file": "Site - poze premium/Cremă de oțet balsamic cu miere/1.jpg",
+          "alt": "Cremă de oțet balsamic cu miere Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Cremă de oțet balsamic cu miere/1.jpg",
+          "alt": "Cremă de oțet balsamic cu miere Panos Greco, pe fundal alb"
+        },
+        {
+          "file": "Site - poze premium/Cremă de oțet balsamic - gama (poză extra)/gama.jpg",
+          "alt": "Cremele de oțet balsamic Panos Greco: cu miere, cu smochine și cu rodie"
+        }
+      ]
+    },
+    {
+      "slug": "crema-otet-balsamic-smochine",
+      "photos": [
+        {
+          "file": "Site - poze premium/Cremă de oțet balsamic cu smochine/1.jpg",
+          "alt": "Cremă de oțet balsamic cu smochine Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Cremă de oțet balsamic cu smochine/1.jpg",
+          "alt": "Cremă de oțet balsamic cu smochine Panos Greco, pe fundal alb"
+        },
+        {
+          "file": "Site - poze premium/Cremă de oțet balsamic - gama (poză extra)/gama.jpg",
+          "alt": "Cremele de oțet balsamic Panos Greco: cu miere, cu smochine și cu rodie"
+        }
+      ]
+    },
+    {
+      "slug": "crema-otet-balsamic-rodie",
+      "photos": [
+        {
+          "file": "Site - poze premium/Cremă de oțet balsamic cu rodie/1.jpg",
+          "alt": "Cremă de oțet balsamic cu rodie Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Cremă de oțet balsamic cu rodie/1.jpg",
+          "alt": "Cremă de oțet balsamic cu rodie Panos Greco, pe fundal alb"
+        },
+        {
+          "file": "Site - poze premium/Cremă de oțet balsamic - gama (poză extra)/gama.jpg",
+          "alt": "Cremele de oțet balsamic Panos Greco: cu miere, cu smochine și cu rodie"
+        }
+      ]
+    },
+    {
+      "slug": "marmelada-zmeura",
+      "photos": [
+        {
+          "file": "Site - poze premium/Marmeladă de zmeură/1.jpg",
+          "alt": "Marmeladă de zmeură Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Marmeladă de zmeură/1.jpg",
+          "alt": "Marmeladă de zmeură Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "marmelada-lamaie",
+      "photos": [
+        {
+          "file": "Site - poze premium/Marmeladă de lămâie/1.jpg",
+          "alt": "Marmeladă de lămâie Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Marmeladă de lămâie/1.jpg",
+          "alt": "Marmeladă de lămâie Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "marmelada-portocale",
+      "photos": [
+        {
+          "file": "Site - poze premium/Marmeladă de portocale/1.jpg",
+          "alt": "Marmeladă de portocale Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Marmeladă de portocale/1.jpg",
+          "alt": "Marmeladă de portocale Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "dulceata-masline",
+      "photos": [
+        {
+          "file": "Site - poze premium/Dulceață de măsline/1.jpg",
+          "alt": "Dulceață de măsline Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Dulceață de măsline/1.jpg",
+          "alt": "Dulceață de măsline Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "dulceata-smochine",
+      "photos": [
+        {
+          "file": "Site - poze premium/Dulceață de smochine/1.jpg",
+          "alt": "Dulceață de smochine Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Dulceață de smochine/1.jpg",
+          "alt": "Dulceață de smochine Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "dulceata-lamaie",
+      "photos": [
+        {
+          "file": "Site - poze premium/Dulceață de lămâie/1.jpg",
+          "alt": "Dulceață de lămâie Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Dulceață de lămâie/1.jpg",
+          "alt": "Dulceață de lămâie Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "dulceata-portocale",
+      "photos": [
+        {
+          "file": "Site - poze premium/Dulceață de portocale/1.jpg",
+          "alt": "Dulceață de portocale Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Dulceață de portocale/1.jpg",
+          "alt": "Dulceață de portocale Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "suc-concentrat-zmeura",
+      "photos": [
+        {
+          "file": "Site - poze premium/Suc concentrat de zmeură/1.jpg",
+          "alt": "Sirop concentrat de zmeură Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Suc concentrat de zmeură/1.jpg",
+          "alt": "Sirop concentrat de zmeură Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "suc-concentrat-capsuni",
+      "photos": [
+        {
+          "file": "Site - poze premium/Suc concentrat de căpșuni/1.jpg",
+          "alt": "Sirop concentrat de căpșuni Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Suc concentrat de căpșuni/1.jpg",
+          "alt": "Sirop concentrat de căpșuni Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "suc-concentrat-lamaie",
+      "photos": [
+        {
+          "file": "Site - poze premium/Suc concentrat de lămâie/1.jpg",
+          "alt": "Sirop concentrat de lămâie Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Suc concentrat de lămâie/1.jpg",
+          "alt": "Sirop concentrat de lămâie Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "suc-concentrat-portocale",
+      "photos": [
+        {
+          "file": "Site - poze premium/Suc concentrat de portocale/1.jpg",
+          "alt": "Sirop concentrat de portocale Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Suc concentrat de portocale/1.jpg",
+          "alt": "Sirop concentrat de portocale Panos Greco, pe fundal alb"
+        }
+      ]
+    },
+    {
+      "slug": "miere-de-portocal",
+      "photos": [
+        {
+          "file": "Site - poze premium/Miere de portocal/1.jpg",
+          "alt": "Miere de portocal Panos Greco, pe o masă de piatră, în lumina soarelui"
+        },
+        {
+          "file": "Site - poze produse/Miere de portocal/1.jpg",
+          "alt": "Miere de portocal Panos Greco, pe fundal alb"
+        }
+      ]
+    }
+  ]
+}

@@ -14,7 +14,8 @@
     "db:baseline": "node scripts/migrate.mjs baseline",
     "db:seed": "node scripts/migrate.mjs seed",
     "db:backup": "node scripts/backup.mjs",
-    "db:restore": "node scripts/backup.mjs restore"
+    "db:restore": "node scripts/backup.mjs restore",
+    "photos:import": "node scripts/import-photos.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

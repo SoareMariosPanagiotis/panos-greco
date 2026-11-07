@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { HomeHero } from "@/components/home-hero";
 import { ProductTile } from "@/components/product-tile";
 import { gql, type ProductTileData } from "@/lib/catalog";
 
@@ -61,7 +62,7 @@ type SearchParams = Promise<{ categorie?: string }>;
 function CategoryLink({ href, label, active }: { href: string; label: string; active: boolean }) {
     return (
         <Link
-            href={href}
+            href={`${href}#produse`}
             // shrink-0 + whitespace-nowrap: pe telefon butonul nu se strânge și nu se rupe pe două rânduri
             className={`shrink-0 rounded-full border px-4 py-1.5 text-sm whitespace-nowrap transition ${
                 active
@@ -131,18 +132,22 @@ async function ProductGrid({ searchParams }: { searchParams: SearchParams }) {
 
 export default function Home({ searchParams }: { searchParams: SearchParams }) {
     return (
-        // Pe telefon margini de 16 px (px-4) și titlu mai mic; de la sm, ca pe calculator
-        <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
-            <h1 className="text-2xl font-bold text-olive sm:text-3xl">Produsele noastre</h1>
-            <p className="mt-2 text-neutral-600">
-                Ulei de măsline extravirgin bio, din livada proprie din Messinia.
-            </p>
-            <Suspense fallback={<div className="mt-6 h-9" />}>
-                <CategoryBar searchParams={searchParams} />
-            </Suspense>
-            <Suspense fallback={<p className="mt-8">Se încarcă produsele...</p>}>
-                <ProductGrid searchParams={searchParams} />
-            </Suspense>
-        </main>
+        // Bannerul are titlul paginii (h1); aici e secțiunea de produse (h2).
+        // id="produse": ținta pentru butonul „Toate produsele” și pentru categorii.
+        <>
+            <HomeHero />
+            <main id="produse" className="mx-auto w-full max-w-6xl scroll-mt-4 px-4 py-6 sm:px-8 sm:py-10">
+                <h2 className="text-2xl font-bold text-olive sm:text-3xl">Produsele noastre</h2>
+                <p className="mt-2 text-neutral-600">
+                    Ulei de măsline extravirgin bio, din livada proprie din Messinia.
+                </p>
+                <Suspense fallback={<div className="mt-6 h-9" />}>
+                    <CategoryBar searchParams={searchParams} />
+                </Suspense>
+                <Suspense fallback={<p className="mt-8">Se încarcă produsele...</p>}>
+                    <ProductGrid searchParams={searchParams} />
+                </Suspense>
+            </main>
+        </>
     );
 }
