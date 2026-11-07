@@ -60,8 +60,9 @@ async function CheckoutLoader() {
 
 export default function CheckoutPage() {
     return (
-        <main className="mx-auto w-full max-w-6xl px-8 py-10">
-            <h1 className="text-3xl font-bold text-olive">Finalizează comanda</h1>
+        // Pe telefon margini de 16 px (px-4) și titlu mai mic; de la sm, ca pe calculator
+        <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
+            <h1 className="text-2xl font-bold text-olive sm:text-3xl">Finalizează comanda</h1>
             <Suspense fallback={<p className="mt-8">Se încarcă...</p>}>
                 <CheckoutLoader />
             </Suspense>

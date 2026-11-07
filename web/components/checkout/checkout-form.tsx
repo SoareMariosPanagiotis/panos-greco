@@ -55,7 +55,7 @@ const initialState: CheckoutState = { error: null };
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
     return (
-        <section className="rounded-xl border bg-white p-6">
+        <section className="rounded-xl border bg-white p-4 sm:p-6">
             <h2 className="text-lg font-semibold">{title}</h2>
             <div className="mt-4 space-y-4">{children}</div>
         </section>
@@ -205,8 +205,8 @@ export function CheckoutForm({ deliveryOptions, paymentOptions, account }: Props
     const values = state.values;
 
     return (
-        <form action={formAction} className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
-            <div className="space-y-6">
+        <form action={formAction} className="mt-6 grid gap-4 sm:mt-8 sm:gap-8 lg:grid-cols-[1fr_380px]">
+            <div className="space-y-4 sm:space-y-6">
                 {/* Din coș trimitem doar mărimea și cantitatea, NU prețul */}
                 {items.map((item) => (
                     <span key={item.variantId} hidden>
@@ -417,7 +417,7 @@ export function CheckoutForm({ deliveryOptions, paymentOptions, account }: Props
                 </Section>
             </div>
 
-            <aside className="h-fit space-y-4 rounded-xl border bg-white p-6 lg:sticky lg:top-6">
+            <aside className="h-fit space-y-4 rounded-xl border bg-white p-4 sm:p-6 lg:sticky lg:top-6">
                 <h2 className="text-lg font-semibold">Sumar comandă</h2>
 
                 {live === null && !priceError && (
@@ -444,7 +444,10 @@ export function CheckoutForm({ deliveryOptions, paymentOptions, account }: Props
                             )}
                             {line.unitPrice !== null && line.quantity > line.stock && (
                                 <p className="mt-1 text-red-600">
-                                    În stoc sunt doar {line.stock} buc. Modifică cantitatea din coș.
+                                    {/* „doar 0 buc.” sună ciudat: dacă nu mai e deloc, o spunem direct */}
+                                    {line.stock > 0
+                                        ? `În stoc sunt doar ${line.stock} buc. Modifică cantitatea din coș.`
+                                        : "Produsul nu mai e în stoc. Șterge-l din coș."}
                                 </p>
                             )}
                             {line.priceChanged && line.unitPrice !== null && (
