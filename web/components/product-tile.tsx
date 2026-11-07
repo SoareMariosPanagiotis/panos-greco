@@ -27,13 +27,14 @@ export function ProductTile({ product }: { product: ProductTileData }) {
                     </div>
                 )}
                 {product.isOrganic && (
-                    <Badge className="absolute left-3 top-3 bg-green-700 text-white">BIO</Badge>
+                    <Badge className="absolute top-2 left-2 bg-green-700 text-white sm:top-3 sm:left-3">BIO</Badge>
                 )}
             </div>
-            <div className="flex flex-1 flex-col p-4">
-                <h2 className="font-medium leading-snug group-hover:text-olive">{product.name}</h2>
+            {/* Pe telefon cardul e îngust (jumătate de ecran): mai puțin spațiu interior și text puțin mai mic */}
+            <div className="flex flex-1 flex-col p-3 sm:p-4">
+                <h2 className="text-sm leading-snug font-medium group-hover:text-olive sm:text-base">{product.name}</h2>
                 {sizes > 1 && <p className="mt-1 text-sm text-neutral-500">{sizes} mărimi</p>}
-                <p className="mt-auto pt-3 text-lg font-bold">
+                <p className="mt-auto pt-2 text-base font-bold sm:pt-3 sm:text-lg">
                     {sizes > 1 && <span className="text-sm font-normal text-neutral-500">de la </span>}
                     {cheapest ? formatPrice(cheapest.price) : "—"}
                 </p>

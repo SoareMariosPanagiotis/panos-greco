@@ -62,7 +62,8 @@ function CategoryLink({ href, label, active }: { href: string; label: string; ac
     return (
         <Link
             href={href}
-            className={`rounded-full border px-4 py-1.5 text-sm transition ${
+            // shrink-0 + whitespace-nowrap: pe telefon butonul nu se strânge și nu se rupe pe două rânduri
+            className={`shrink-0 rounded-full border px-4 py-1.5 text-sm whitespace-nowrap transition ${
                 active
                     ? "border-olive bg-olive text-white"
                     : "bg-white hover:border-olive hover:text-olive"
@@ -82,8 +83,12 @@ async function CategoryBar({ searchParams }: { searchParams: SearchParams }) {
         (category) => category.productsByCategoryId.totalCount > 0,
     );
 
+    // Pe telefon: un singur rând care se derulează lateral cu degetul (overflow-x-auto), ca să nu
+    // împingă produsele în jos. -mx-4 px-4 lasă rândul să ajungă până la marginea ecranului, deci se
+    // vede că mai sunt categorii în dreapta. Bara de derulare o ascundem (se derulează cu degetul).
+    // De la sm (640 px): butoanele se așază pe mai multe rânduri, ca înainte.
     return (
-        <nav className="mt-6 flex flex-wrap gap-2">
+        <nav className="-mx-4 mt-5 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:mt-6 sm:flex-wrap sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
             <CategoryLink href="/" label="Toate" active={!categorie} />
             {categories.map((category) => (
                 <CategoryLink
@@ -116,7 +121,7 @@ async function ProductGrid({ searchParams }: { searchParams: SearchParams }) {
     }
 
     return (
-        <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
             {products.map((product) => (
                 <ProductTile key={product.id} product={product} />
             ))}
@@ -126,8 +131,9 @@ async function ProductGrid({ searchParams }: { searchParams: SearchParams }) {
 
 export default function Home({ searchParams }: { searchParams: SearchParams }) {
     return (
-        <main className="mx-auto w-full max-w-6xl px-8 py-10">
-            <h1 className="text-3xl font-bold text-olive">Produsele noastre</h1>
+        // Pe telefon margini de 16 px (px-4) și titlu mai mic; de la sm, ca pe calculator
+        <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
+            <h1 className="text-2xl font-bold text-olive sm:text-3xl">Produsele noastre</h1>
             <p className="mt-2 text-neutral-600">
                 Ulei de măsline extravirgin bio, din livada proprie din Messinia.
             </p>
