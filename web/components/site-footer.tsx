@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ORGANIC_CERTIFICATE_PATH } from "@/lib/organic-certificate";
 import { getShopInfo, phoneHref, type ShopInfo } from "@/lib/shop-info";
 import { RETURN_FORM_LABEL, RETURN_FORM_PATH } from "@/lib/withdrawals";
 
@@ -9,6 +10,7 @@ import { RETURN_FORM_LABEL, RETURN_FORM_PATH } from "@/lib/withdrawals";
 //   - pictograma ANPC SAL, 250 × 50 px, cu link la reclamatiisal.anpc.ro (Ordinul ANPC 270/2026)
 
 const infoLinks = [
+    { href: ORGANIC_CERTIFICATE_PATH, label: "Certificatul bio" },
     { href: "/termeni", label: "Termeni și condiții" },
     { href: "/confidentialitate", label: "Politica de confidențialitate" },
     { href: "/contact", label: "Contact" },

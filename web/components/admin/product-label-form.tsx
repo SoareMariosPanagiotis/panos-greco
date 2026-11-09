@@ -28,7 +28,12 @@ const TEXTS: { name: keyof LabelValues; label: string; hint?: string; rows?: num
         label: "Producător / ambalator",
         hint: "Numele și adresa, exact ca pe etichetă.",
     },
-    { name: "organicCode", label: "Cod organism de control bio", placeholder: "ex: GR-BIO-01", hint: "Doar la produsele bio." },
+    {
+        name: "organicCode",
+        label: "Cod organism de control bio",
+        placeholder: "ex: GR-BIO-01",
+        hint: "Doar la produsele bio: codul organismului de control, ca în certificat (DIO = GR-BIO-01). Cu el și cu țara de origine completate, pe pagina produsului apare sigla bio a UE.",
+    },
     {
         name: "labelNotes",
         label: "Alte mențiuni de pe etichetă",

@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { HomeHero } from "@/components/home-hero";
 import { ProductTile } from "@/components/product-tile";
+import { TrustStrip } from "@/components/trust-strip";
 import { gql, type ProductTileData } from "@/lib/catalog";
 
 // Câmpurile unui card, scrise o singură dată și refolosite în ambele interogări
@@ -149,6 +150,7 @@ export default function Home({ searchParams }: { searchParams: SearchParams }) {
         // id="produse": ținta pentru butonul „Toate produsele” și pentru categorii.
         <>
             <HomeHero />
+            <TrustStrip />
             <main id="produse" className="mx-auto w-full max-w-6xl scroll-mt-4 px-4 py-6 sm:px-8 sm:py-10">
                 <h2 className="text-2xl font-bold text-olive sm:text-3xl">Produsele noastre</h2>
                 <p className="mt-2 text-neutral-600">

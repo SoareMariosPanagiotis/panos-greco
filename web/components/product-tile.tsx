@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Leaf } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, type ProductTileData } from "@/lib/catalog";
 import { imageSrc } from "@/lib/product-images";
@@ -39,7 +40,10 @@ export function ProductTile({ product }: { product: ProductTileData }) {
                     />
                 )}
                 {product.isOrganic && (
-                    <Badge className="absolute top-2 left-2 bg-green-700 text-white sm:top-3 sm:left-3">BIO</Badge>
+                    <Badge className="absolute top-2 left-2 bg-green-700 text-white sm:top-3 sm:left-3">
+                        <Leaf />
+                        BIO
+                    </Badge>
                 )}
             </div>
             {/* Pe telefon cardul e îngust (jumătate de ecran): mai puțin spațiu interior și text puțin mai mic */}

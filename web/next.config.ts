@@ -30,9 +30,9 @@ const securityHeaders = [
   ...(production ? [{ key: "Strict-Transport-Security", value: "max-age=31536000" }] : []),
 ];
 
-// Facturile în PDF (/factura/...): browserul le arată cu cititorul lui de PDF, care pentru el e un
-// „plugin”. Regula object-src 'none' de mai sus l-ar putea bloca, așa că pentru aceste adrese
-// trimitem o regulă potrivită pentru un fișier: totul doar de pe site-ul nostru.
+// Facturile în PDF (/factura/...) și certificatul bio (/bio/...): browserul arată PDF-urile cu
+// cititorul lui, care pentru el e un „plugin”. Regula object-src 'none' de mai sus l-ar putea bloca,
+// așa că pentru aceste adrese trimitem o regulă potrivită pentru un fișier: totul doar de pe site-ul nostru.
 const pdfHeaders = [
   { key: "Content-Security-Policy", value: "default-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'self'" },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
@@ -46,6 +46,7 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: securityHeaders },
       { source: "/factura/:path*", headers: pdfHeaders },
+      { source: "/bio/:path*", headers: pdfHeaders },
     ];
   },
   experimental: {

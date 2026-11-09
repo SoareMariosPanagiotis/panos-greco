@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getImageProps } from "next/image";
-import { BadgeCheck, Store, Truck } from "lucide-react";
+import { GreekFlag } from "@/components/greek-flag";
 
 // Bannerul mare din pagina principală: poza cu gama de ulei, iar peste ea titlul și butoanele.
 //
@@ -60,7 +60,8 @@ export function HomeHero() {
             <div className="absolute inset-0">
                 <div className="mx-auto flex h-full max-w-6xl items-start px-4 pt-7 sm:px-8 md:items-center md:pt-0">
                     <div className="max-w-md text-neutral-900 lg:max-w-lg">
-                        <p className="text-xs font-semibold tracking-[0.18em] text-olive uppercase sm:text-sm">
+                        <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.18em] text-olive uppercase sm:text-sm">
+                            <GreekFlag className="h-3 w-[18px] shrink-0 sm:h-3.5 sm:w-[21px]" />
                             Din livada familiei · Messinia, Grecia
                         </p>
                         <h1 className="mt-2 text-[1.7rem] leading-tight font-bold text-balance sm:text-4xl lg:text-5xl">
@@ -83,18 +84,6 @@ export function HomeHero() {
                                 Toate produsele
                             </Link>
                         </div>
-                        {/* Motive de încredere: scurte, adevărate, ușor de citit dintr-o privire */}
-                        <ul className="mt-6 hidden flex-wrap gap-x-5 gap-y-2 text-sm text-neutral-700 md:flex">
-                            <li className="flex items-center gap-1.5">
-                                <BadgeCheck className="size-4 text-olive" /> Certificat bio
-                            </li>
-                            <li className="flex items-center gap-1.5">
-                                <Truck className="size-4 text-olive" /> Livrare în toată țara
-                            </li>
-                            <li className="flex items-center gap-1.5">
-                                <Store className="size-4 text-olive" /> Magazin în Galați
-                            </li>
-                        </ul>
                     </div>
                 </div>
             </div>
