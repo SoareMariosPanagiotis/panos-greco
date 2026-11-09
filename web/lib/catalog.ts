@@ -38,6 +38,7 @@ export type ProductTileData = {
     isOrganic: boolean;
     imageUrl: string | null;
     secondImage?: { nodes: { id: string }[] }; // a doua poză din galerie, pentru hover pe card
+    categoryByCategoryId?: { sortOrder: number | null } | null; // ordinea categoriei, pentru vitrină
     cheapest: { totalCount: number; nodes: { price: string }[] };
 };
 

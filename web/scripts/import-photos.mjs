@@ -202,7 +202,8 @@ for (const product of manifest.products) {
 await client.end();
 console.log(
     dryRun
-        ? `\nVerificare gata. Probleme: ${problems}. Lăsate neatinse: ${skipped}.`
+        ? `\nVerificare gata: NU am încărcat nimic. Probleme: ${problems}. Lăsate neatinse: ${skipped}.\n` +
+          "Ca să le încarci pe site: aceeași comandă, cu --replace în loc de --dry-run."
         : `\nGata: ${photosDone} poze la ${productsDone} produse. Lăsate neatinse: ${skipped}. Probleme: ${problems}.`,
 );
 if (problems > 0) process.exitCode = 1;

@@ -12,6 +12,7 @@ const tileFields = `
     slug
     isOrganic
     imageUrl
+    categoryByCategoryId { sortOrder }
     secondImage: productImagesByProductId(orderBy: [POSITION_ASC, CREATED_AT_ASC], first: 1, offset: 1) {
       nodes { id }
     }
@@ -119,6 +120,15 @@ async function ProductGrid({ searchParams }: { searchParams: SearchParams }) {
         const data = await gql<{ allProducts: { nodes: ProductTileData[] } }>(allProductsQuery);
         products = data.allProducts.nodes;
     }
+
+    // Vitrina, ca la magazinele mari: întâi produsele cu poze, în ordinea categoriilor (uleiul în
+    // frunte), apoi cele încă fără poze. În fiecare grup, alfabetic. sort() păstrează ordinea la egalitate.
+    products = [...products].sort((a, b) => {
+        const photo = Number(Boolean(b.imageUrl)) - Number(Boolean(a.imageUrl));
+        if (photo !== 0) return photo;
+        const order = (a.categoryByCategoryId?.sortOrder ?? 999) - (b.categoryByCategoryId?.sortOrder ?? 999);
+        return order !== 0 ? order : a.name.localeCompare(b.name, "ro");
+    });
 
     if (products.length === 0) {
         return <p className="mt-8 text-neutral-600">Nu am găsit produse în această categorie.</p>;
