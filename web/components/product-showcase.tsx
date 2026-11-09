@@ -15,14 +15,14 @@ type Props = {
     after?: ReactNode; // sub butonul de coș: livrarea și returul, tot de pe server
 };
 
-// Ce poze arată galeria, ca la magazinele mari: pozele mărimii alese plus pozele generale ale
-// produsului; pozele celorlalte mărimi nu încurcă. Până alege clientul o mărime, întâi pozele
-// generale (cea de pe card, ca pagina să continue ce a văzut), apoi cele ale mărimii de pornire.
-// După ce alege, întâi pozele mărimii lui.
-function photosFor(images: ProductImage[], variantId: string | undefined, chosen: boolean) {
+// Ce poze arată galeria, ca la magazinele mari: întâi pozele mărimii alese (la ulei, prima e cea
+// cu avantajele și mărimea scrisă pe ea), apoi pozele generale ale produsului. Pozele celorlalte
+// mărimi nu încurcă. Și la deschiderea paginii e la fel: e aleasă deja prima mărime, deci se vede
+// întâi poza ei.
+function photosFor(images: ProductImage[], variantId: string | undefined) {
     const general = images.filter((image) => !image.variantId);
     const own = images.filter((image) => image.variantId !== null && image.variantId === variantId);
-    const shown = chosen ? [...own, ...general] : [...general, ...own];
+    const shown = [...own, ...general];
     return shown.length > 0 ? shown : images; // plasă de siguranță: dacă există poze, galeria nu rămâne goală
 }
 
@@ -31,19 +31,13 @@ function photosFor(images: ProductImage[], variantId: string | undefined, chosen
 // butoanele o schimbă, iar galeria arată pozele ei.
 export function ProductShowcase({ images, variants, productName, productSlug, children, after }: Props) {
     const [variantId, setVariantId] = useState(variants[0]?.id);
-    const [chosen, setChosen] = useState(false);
-
-    function selectVariant(id: string) {
-        setVariantId(id);
-        setChosen(true);
-    }
 
     return (
         <div className="mt-4 grid gap-6 sm:mt-6 md:grid-cols-2 md:gap-10">
             {/* key: la altă mărime, galeria pornește de la capăt, de la prima poză a mărimii */}
             <ProductGallery
-                key={chosen ? variantId : "general"}
-                images={photosFor(images, variantId, chosen)}
+                key={variantId ?? "general"}
+                images={photosFor(images, variantId)}
                 productName={productName}
             />
             <div>
@@ -53,7 +47,7 @@ export function ProductShowcase({ images, variants, productName, productSlug, ch
                     productSlug={productSlug}
                     variants={variants}
                     selectedId={variantId}
-                    onSelect={selectVariant}
+                    onSelect={setVariantId}
                 />
                 {after}
             </div>

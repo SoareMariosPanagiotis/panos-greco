@@ -224,7 +224,16 @@ export function ProductGallery({ images, productName }: Props) {
                                     i === index ? "border-olive" : "border-transparent opacity-70 hover:opacity-100"
                                 }`}
                             >
-                                <Image src={imageSrc(image.id)} alt="" fill sizes="80px" className="object-cover" />
+                                {/* Prima miniatură se încarcă la fel ca prima poză mare (eager): au aceeași adresă
+                                    de rezervă (src), iar altfel Next.js ar crede, greșit, că poza mare e „lazy” */}
+                                <Image
+                                    src={imageSrc(image.id)}
+                                    alt=""
+                                    fill
+                                    sizes="80px"
+                                    loading={i === 0 ? "eager" : undefined}
+                                    className="object-cover"
+                                />
                             </button>
                         ))}
                     </div>
