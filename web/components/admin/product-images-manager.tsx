@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { imageSrc, type ProductImage } from "@/lib/product-images";
 
 const initialState: ImageActionState = { status: "idle", message: "" };
-const MAX_IMAGES = 12; // aceeași limită ca în baza de date (migrația 032)
+const MAX_IMAGES = 20; // aceeași limită ca în baza de date (migrația 034)
 
 export type SizeOption = { id: string; label: string }; // o mărime a produsului, ex. „5 l”
 
