@@ -37,6 +37,7 @@ export type ProductTileData = {
     slug: string;
     isOrganic: boolean;
     imageUrl: string | null;
+    secondImage?: { nodes: { id: string }[] }; // a doua poză din galerie, pentru hover pe card
     cheapest: { totalCount: number; nodes: { price: string }[] };
 };
 

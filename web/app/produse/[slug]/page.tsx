@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { getDeliveryHints } from "@/app/cos/actions";
 import { PRODUCT_LABEL_FIELDS, ProductLabel, type ProductLabelData } from "@/components/product-label";
+import { ProductPerks } from "@/components/product-perks";
 import { ProductShowcase } from "@/components/product-showcase";
 import { Badge } from "@/components/ui/badge";
 import { formatSize, gql, type ProductDetails } from "@/lib/catalog";
@@ -25,11 +27,15 @@ const query = `
 
 async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
-    const data = await gql<{
-        productBySlug:
-            | (ProductDetails & ProductLabelData & { productImagesByProductId: { nodes: ProductImage[] } })
-            | null;
-    }>(query, { slug });
+    // Produsul și livrarea, în paralel: nu așteptăm una după alta
+    const [data, hints] = await Promise.all([
+        gql<{
+            productBySlug:
+                | (ProductDetails & ProductLabelData & { productImagesByProductId: { nodes: ProductImage[] } })
+                | null;
+        }>(query, { slug }),
+        getDeliveryHints(),
+    ]);
     const product = data.productBySlug;
 
     if (!product) notFound();
@@ -42,6 +48,7 @@ async function ProductView({ params }: { params: Promise<{ slug: string }> }) {
                 variants={product.productVariantsByProductId.nodes}
                 productName={product.name}
                 productSlug={slug}
+                after={<ProductPerks hints={hints} />}
             >
                 <p className="text-sm text-neutral-500">{product.categoryByCategoryId?.name}</p>
                 <h1 className="mt-1 text-2xl font-bold sm:text-3xl">{product.name}</h1>

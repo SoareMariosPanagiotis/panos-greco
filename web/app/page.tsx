@@ -12,6 +12,9 @@ const tileFields = `
     slug
     isOrganic
     imageUrl
+    secondImage: productImagesByProductId(orderBy: [POSITION_ASC, CREATED_AT_ASC], first: 1, offset: 1) {
+      nodes { id }
+    }
     cheapest: productVariantsByProductId(orderBy: PRICE_ASC, first: 1) {
       totalCount
       nodes { price }

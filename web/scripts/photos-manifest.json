@@ -1,5 +1,5 @@
 {
-  "_despre": "Pozele de produs pentru npm run photos:import. Căile pornesc din folderul dat la comandă (la noi, „Foto banner”). Ordinea contează: prima poză e cea principală. „size” leagă poza de o mărime (migrația 033).",
+  "_despre": "Pozele de produs pentru npm run photos:import. Căile pornesc din folderul dat la comandă (la noi, „Foto banner”). Ordinea contează: prima poză e pe card, a doua apare la hover pe card. „size” leagă poza de o mărime (migrația 033): pe pagina produsului, la alegerea mărimii, se văd pozele ei.",
   "products": [
     {
       "slug": "ulei-de-masline-extravirgin-bio",
@@ -7,6 +7,14 @@
         {
           "file": "Site - poze premium/Ulei de măsline extravirgin bio/5 - toată gama.jpg",
           "alt": "Uleiul de măsline extravirgin bio Panos Greco: 250 ml, 500 ml, 1 l și 3 l"
+        },
+        {
+          "file": "Site - poze premium/Ulei de măsline extravirgin bio/6 - avantaje.jpg",
+          "alt": "Ulei de măsline extravirgin bio Panos Greco: presat la rece, bio certificat, nefiltrat, din Messinia, Grecia"
+        },
+        {
+          "file": "Site - poze premium/Ulei de măsline extravirgin bio/7 - mărimi.jpg",
+          "alt": "Uleiul Panos Greco în patru mărimi: 250 ml, 500 ml, 1 l și 3 l"
         },
         {
           "file": "Site - poze premium/Ulei de măsline extravirgin bio/1 - 250 ml.jpg",

@@ -12,37 +12,40 @@ type Props = {
     productName: string;
     productSlug: string;
     children: ReactNode; // titlul, categoria și eticheta BIO, făcute pe server
+    after?: ReactNode; // sub butonul de coș: livrarea și returul, tot de pe server
 };
 
-// Prima poză a unei mărimi, dacă are; altfel null
-function imageOf(images: ProductImage[], variantId: string | undefined) {
-    const index = images.findIndex((image) => image.variantId === variantId);
-    return index >= 0 ? index : null;
+// Ce poze arată galeria, ca la magazinele mari: pozele mărimii alese plus pozele generale ale
+// produsului; pozele celorlalte mărimi nu încurcă. Până alege clientul o mărime, întâi pozele
+// generale (cea de pe card, ca pagina să continue ce a văzut), apoi cele ale mărimii de pornire.
+// După ce alege, întâi pozele mărimii lui.
+function photosFor(images: ProductImage[], variantId: string | undefined, chosen: boolean) {
+    const general = images.filter((image) => !image.variantId);
+    const own = images.filter((image) => image.variantId !== null && image.variantId === variantId);
+    const shown = chosen ? [...own, ...general] : [...general, ...own];
+    return shown.length > 0 ? shown : images; // plasă de siguranță: dacă există poze, galeria nu rămâne goală
 }
 
 // Partea de sus a paginii produsului: galeria (stânga) și alegerea mărimii (dreapta).
-// Sunt legate între ele, deci starea comună („ce mărime”, „ce poză”) stă aici, deasupra amândurora
-// („lifting state up”, în React): alegi 5 l → galeria sare la poza canistrei; apeși pe poza
-// canistrei → se alege 5 l.
-export function ProductShowcase({ images, variants, productName, productSlug, children }: Props) {
+// Mărimea aleasă stă aici, deasupra amândurora („lifting state up”, în React):
+// butoanele o schimbă, iar galeria arată pozele ei.
+export function ProductShowcase({ images, variants, productName, productSlug, children, after }: Props) {
     const [variantId, setVariantId] = useState(variants[0]?.id);
-    const [current, setCurrent] = useState(() => imageOf(images, variants[0]?.id) ?? 0);
+    const [chosen, setChosen] = useState(false);
 
     function selectVariant(id: string) {
         setVariantId(id);
-        const index = imageOf(images, id);
-        if (index !== null) setCurrent(index); // fără poză proprie: rămâne poza de acum
-    }
-
-    function selectImage(index: number) {
-        setCurrent(index);
-        const imageVariant = images[index]?.variantId;
-        if (imageVariant) setVariantId(imageVariant);
+        setChosen(true);
     }
 
     return (
         <div className="mt-4 grid gap-6 sm:mt-6 md:grid-cols-2 md:gap-10">
-            <ProductGallery images={images} productName={productName} current={current} onSelect={selectImage} />
+            {/* key: la altă mărime, galeria pornește de la capăt, de la prima poză a mărimii */}
+            <ProductGallery
+                key={chosen ? variantId : "general"}
+                images={photosFor(images, variantId, chosen)}
+                productName={productName}
+            />
             <div>
                 {children}
                 <VariantPicker
@@ -52,6 +55,7 @@ export function ProductShowcase({ images, variants, productName, productSlug, ch
                     selectedId={variantId}
                     onSelect={selectVariant}
                 />
+                {after}
             </div>
         </div>
     );
