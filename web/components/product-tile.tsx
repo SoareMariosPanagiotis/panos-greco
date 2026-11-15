@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Leaf } from "lucide-react";
+import { ArrowRight, Leaf } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, type ProductTileData } from "@/lib/catalog";
 import { imageSrc } from "@/lib/product-images";
@@ -12,16 +12,16 @@ export function ProductTile({ product }: { product: ProductTileData }) {
     return (
         <Link
             href={`/produse/${product.slug}`}
-            className="group flex flex-col overflow-hidden rounded-xl border bg-white transition hover:shadow-lg"
+            className="group flex flex-col overflow-hidden rounded-xl border bg-white transition duration-300 hover:-translate-y-1 hover:shadow-xl"
         >
-            <div className="relative aspect-square bg-olive-light">
+            <div className="relative aspect-square overflow-hidden bg-olive-light">
                 {product.imageUrl ? (
                     <Image
                         src={product.imageUrl}
                         alt={product.name}
                         fill
                         sizes="(min-width: 1024px) 25vw, 50vw"
-                        className="object-cover"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                     />
                 ) : (
                     <div className="flex h-full items-center justify-center text-6xl font-bold text-olive/30">
@@ -36,9 +36,17 @@ export function ProductTile({ product }: { product: ProductTileData }) {
                         alt=""
                         fill
                         sizes="(min-width: 1024px) 25vw, 50vw"
-                        className="hidden object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100 [@media(hover:hover)]:block"
+                        className="hidden object-cover opacity-0 transition duration-700 ease-out group-hover:scale-105 group-hover:opacity-100 [@media(hover:hover)]:block"
                     />
                 )}
+                {/* Pe calculator: când treci peste card, de jos urcă invitația de a deschide produsul */}
+                <span
+                    aria-hidden="true"
+                    className="absolute inset-x-3 bottom-3 hidden translate-y-[150%] items-center justify-center gap-1.5 rounded-full bg-white/95 py-2 text-sm font-semibold text-olive shadow-md transition duration-500 ease-out group-hover:translate-y-0 [@media(hover:hover)]:flex"
+                >
+                    Vezi produsul
+                    <ArrowRight className="size-4" />
+                </span>
                 {product.isOrganic && (
                     <Badge className="absolute top-2 left-2 bg-green-700 text-white sm:top-3 sm:left-3">
                         <Leaf />

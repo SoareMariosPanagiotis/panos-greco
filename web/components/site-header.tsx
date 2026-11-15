@@ -30,26 +30,28 @@ export function SiteHeader() {
                         loading="eager"
                         className="h-12 w-auto shrink-0 md:h-30"
                     />
-                    {/* Numele, cu exact aceleași litere ca în logo, dar albe */}
+                    {/* Numele, cu exact aceleași litere ca în logo, dar albe. Pe tabletă (md) îl ascundem: nu încape lângă meniu */}
                     <Image
                         src="/logo-text-white.svg"
                         alt=""
                         width={321}
                         height={66}
                         loading="eager"
-                        className="h-7 w-auto md:h-10 md:self-center"
+                        className="h-7 w-auto md:hidden lg:block lg:h-10 lg:self-center"
                     />
                 </Link>
                 {/* De la md în sus; pe telefon aceleași lucruri sunt în bara de jos.
                     CartLink rămâne pe pagină și pe telefon (doar ascuns), pentru că el desenează sertarul coșului. */}
-                <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
+                {/* Pe tabletă (md) e mai puțin loc: spațiu mai mic între linkuri, iar textele nu se rup pe două rânduri */}
+                <nav className="hidden items-center gap-4 text-sm font-medium whitespace-nowrap md:flex lg:gap-6">
                     {NAV_LINKS.map((link) => (
                         <Link
                             key={link.href}
                             href={link.href}
-                            className="opacity-90 hover:underline hover:opacity-100"
+                            className="opacity-90 transition-opacity hover:opacity-100"
                         >
-                            {link.label}
+                            {/* Sublinierea crește de la stânga la dreapta (.link-grow, în globals.css) */}
+                            <span className="link-grow">{link.label}</span>
                         </Link>
                     ))}
                     {/* Doar bucata asta citește cookie-ul, restul meniului rămâne static */}

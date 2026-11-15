@@ -56,9 +56,15 @@ export function formatSize(size: number, unit: string) {
     return `${size} ${unit}`;
 }
 
+// Mărimea scrisă ca în adresă: „1 l” → „1-l”, „250 ml” → „250-ml”.
+// Cu ea, un link poate deschide pagina produsului cu mărimea deja aleasă (?marime=1-l).
+export function sizeSlug(size: number, unit: string) {
+    return formatSize(size, unit).replace(/\s+/g, "-");
+}
+
 export function formatPrice(price: string) {
     return `${Number(price).toLocaleString("ro-RO", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     })} lei`;
-}
+}

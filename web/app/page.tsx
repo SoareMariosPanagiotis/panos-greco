@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { HomeHero } from "@/components/home-hero";
+import { HomeStory } from "@/components/home-story";
 import { ProductTile } from "@/components/product-tile";
+import { Reveal } from "@/components/reveal";
 import { TrustStrip } from "@/components/trust-strip";
 import { gql, type ProductTileData } from "@/lib/catalog";
 
@@ -136,9 +138,13 @@ async function ProductGrid({ searchParams }: { searchParams: SearchParams }) {
     }
 
     return (
+        // Fiecare card stă într-un <Reveal>: cele de sub ecran apar când ajungi la ele, pe rând.
+        // „grid” pe Reveal: cardul dinăuntru se întinde pe toată înălțimea rândului, ca înainte.
         <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-8 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
             {products.map((product) => (
-                <ProductTile key={product.id} product={product} />
+                <Reveal key={product.id} className="grid">
+                    <ProductTile product={product} />
+                </Reveal>
             ))}
         </div>
     );
@@ -152,7 +158,7 @@ export default function Home({ searchParams }: { searchParams: SearchParams }) {
             <HomeHero />
             <TrustStrip />
             <main id="produse" className="mx-auto w-full max-w-6xl scroll-mt-4 px-4 py-6 sm:px-8 sm:py-10">
-                <h2 className="text-2xl font-bold text-olive sm:text-3xl">Produsele noastre</h2>
+                <h2 className="font-serif text-3xl font-semibold text-olive sm:text-4xl">Produsele noastre</h2>
                 <p className="mt-2 text-neutral-600">
                     Ulei de măsline extravirgin bio, din livada proprie din Messinia.
                 </p>
@@ -163,6 +169,7 @@ export default function Home({ searchParams }: { searchParams: SearchParams }) {
                     <ProductGrid searchParams={searchParams} />
                 </Suspense>
             </main>
+            <HomeStory />
         </>
     );
 }

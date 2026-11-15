@@ -10,7 +10,7 @@
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
-  --font-serif: var(--font-lora), ui-serif, Georgia, serif; /* Lora: doar pe paginile care o încarcă (Despre noi) */
+  --font-serif: var(--font-lora), ui-serif, Georgia, serif; /* Lora, încărcată în app/layout.tsx */
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -133,6 +133,349 @@
 @theme {
   --color-olive: #5a6b2e;
   --color-olive-light: #f4f5ec;
+  --color-oil: #c39a2b; /* auriul uleiului: picătura și linia din „drumul uleiului” */
+}
+
+/* ---------- Mișcare ----------
+   Trei feluri de mișcare, fiecare cu rostul ei:
+
+   1. La încărcarea paginii (doar CSS):
+      - .word: titlul urcă de după o mască, cuvânt cu cuvânt (components/words.tsx);
+      - .enter, .enter-1 … .enter-4: restul bannerului intră pe rând;
+      - .hero-settle: poza mare pornește puțin mărită și se așază;
+      - .curtain-load: o poză se dezvelește de sus în jos, ca o cortină.
+
+   2. Când ajungi la un element cu scroll-ul (components/reveal.tsx pune data-state pe el):
+      - data-reveal="rise": urcă și se limpezește; "curtain": cortina; "route": drumul uleiului (.oil-route-…).
+      Se întâmplă o singură dată. Fără JavaScript, elementele n-au data-state și sunt pur și simplu vizibile.
+
+   3. Legate direct de poziția paginii (animation-timeline, tot doar CSS):
+      - poza din banner coboară puțin mai încet decât pagina (adâncime), .parallax-zoom se micșorează ușor,
+        iar cuvintele citatului (.ink) se „scriu” cu cerneală pe măsură ce citești.
+      Browserele care nu știu animation-timeline sar peste blocul @supports și arată totul normal.
+
+   Cine a cerut în sistem „mai puțină mișcare” (prefers-reduced-motion) nu primește niciuna.
+   Animațiile au doar „from”: capătul e chiar felul în care arată elementul în mod normal. */
+@keyframes pg-rise {
+  from { opacity: 0; transform: translateY(40px); }
+}
+@keyframes pg-word {
+  from { transform: translateY(115%); }
+}
+@keyframes pg-curtain {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes pg-unzoom {
+  from { scale: 1.3; }
+}
+@keyframes pg-settle {
+  from { scale: 1.08; }
+}
+@keyframes pg-drift {
+  to { translate: 0 9%; }
+}
+@keyframes pg-zoom {
+  from { scale: 1.16; }
+}
+@keyframes pg-route-fill {
+  from { transform: scaleX(0); }
+}
+@keyframes pg-route-drop {
+  from { left: 14px; }
+}
+@keyframes pg-ink {
+  from { opacity: 0.16; }
+}
+
+/* Masca unui cuvânt din titlu. padding + margin negativ: loc pentru diacritice și pentru literele
+   care coboară sub rând (ș, ț, g, p), fără să se schimbe distanța dintre rânduri. */
+.word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding: 0.14em 0.03em 0.2em;
+  margin: -0.14em -0.03em -0.2em;
+}
+.word > span {
+  display: inline-block;
+}
+
+/* Drumul uleiului: o linie punctată, peste ea linia aurie care se umple și picătura care merge pe ea */
+.oil-route-track {
+  position: relative;
+  flex: 1;
+  min-width: 3rem;
+  height: 2px;
+  background: repeating-linear-gradient(to right, rgb(90 107 46 / 0.35) 0 6px, transparent 6px 12px);
+}
+.oil-route-fill {
+  position: absolute;
+  inset: 0;
+  border-radius: 2px;
+  background: var(--color-oil);
+  transform-origin: left;
+}
+.oil-route-drop {
+  position: absolute;
+  top: 50%;
+  left: calc(100% - 14px);
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  translate: -50% -50%;
+  border-radius: 999px;
+  background: white;
+  box-shadow: 0 1px 5px rgb(0 0 0 / 0.18);
+}
+
+/* Linkul a cărui subliniere crește de la stânga la dreapta când treci peste el */
+.link-grow {
+  padding-bottom: 2px;
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 100% / 0 1.5px;
+  transition: background-size 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+a:hover .link-grow,
+a:focus-visible .link-grow,
+a.link-grow:hover,
+a.link-grow:focus-visible {
+  background-size: 100% 1.5px;
+}
+
+/* Butonul principal: o dungă de lumină trece peste el când pui mouse-ul */
+.btn-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.btn-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.28) 50%, transparent 65%);
+  translate: -110% 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* 1. La încărcare */
+  .enter { animation: pg-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+  .enter-1 { animation-delay: 0.45s; }
+  .enter-2 { animation-delay: 0.6s; }
+  .enter-3 { animation-delay: 0.75s; }
+  .enter-4 { animation-delay: 0.9s; }
+  .word > span { animation: pg-word 1s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+  .hero-settle { animation: pg-settle 2.4s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+  .curtain-load { animation: pg-curtain 1.3s cubic-bezier(0.65, 0, 0.35, 1) 0.15s backwards; }
+  .btn-sheen:hover::after { translate: 110% 0; transition: translate 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+
+  /* 2. La scroll, o singură dată (vezi components/reveal.tsx) */
+  [data-reveal][data-state="hidden"] { opacity: 0; }
+  [data-reveal][data-state="in"] {
+    animation: pg-rise 1s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0ms) backwards;
+  }
+  [data-reveal="curtain"][data-state="in"] {
+    animation: pg-curtain 1.2s cubic-bezier(0.65, 0, 0.35, 1) var(--reveal-delay, 0ms) backwards;
+  }
+  [data-reveal="curtain"][data-state="in"] img {
+    animation: pg-unzoom 1.9s cubic-bezier(0.16, 1, 0.3, 1) var(--reveal-delay, 0ms) backwards;
+  }
+  [data-reveal="route"][data-state="hidden"] { opacity: 1; }
+  [data-reveal="route"][data-state="hidden"] .oil-route-fill { transform: scaleX(0); }
+  [data-reveal="route"][data-state="hidden"] .oil-route-drop { left: 14px; }
+  [data-reveal="route"][data-state="in"] { animation: none; }
+  [data-reveal="route"][data-state="in"] .oil-route-fill {
+    animation: pg-route-fill 2.4s cubic-bezier(0.65, 0, 0.35, 1) backwards;
+  }
+  [data-reveal="route"][data-state="in"] .oil-route-drop {
+    animation: pg-route-drop 2.4s cubic-bezier(0.65, 0, 0.35, 1) backwards;
+  }
+
+  /* 3. Legate de poziția paginii */
+  @supports (animation-timeline: view()) {
+    /* Două animații pe aceeași poză: așezarea (pe timp) și coborârea lentă (pe scroll).
+       Una schimbă „scale”, cealaltă „translate”, deci nu se calcă pe picioare. */
+    .hero-settle {
+      animation:
+        pg-settle 2.4s cubic-bezier(0.16, 1, 0.3, 1) backwards,
+        pg-drift linear both;
+      animation-timeline: auto, scroll(root);
+      animation-range: normal, 0px 100vh;
+    }
+    /* Rama pozei are overflow-clip, nu overflow-hidden (altfel animația se leagă de ramă, nu de pagină) */
+    .parallax-zoom {
+      animation: pg-zoom linear both;
+      animation-timeline: view();
+      animation-range: entry 0% exit 100%;
+    }
+    /* Citatul: fiecare cuvânt are numărul lui (--i) din totalul --n și se întunecă atunci când
+       citatul a urcat pe ecran cât îi vine rândul. */
+    .ink { view-timeline: --ink block; }
+    .ink > span {
+      animation: pg-ink linear both;
+      animation-timeline: --ink;
+      animation-range: calc(16% + var(--i) / var(--n) * 30%) calc(23% + var(--i) / var(--n) * 30%);
+    }
+  }
+}
+
+/* La tipărit nu ascundem nimic */
+@media print {
+  [data-reveal][data-state] { opacity: 1 !important; animation: none !important; }
+}
+
+/* ---------- Bannerul de pe prima pagină: vitrina cu sticle (components/home-hero.tsx) ----------
+   La încărcare, o singură „scenă”: sticlele se așază pe masă pe rând, umbrele apar când ating masa,
+   apoi etichetele. În fundal, foarte încet, umbra ramurilor de măslin se leagănă. */
+
+/* Fundalul: perete și masă, fără produse. Poza are toată înălțimea bannerului (auto 100%) și stă pe mijloc;
+   ce e mai lat decât ecranul se taie egal din ambele părți. Pe telefon, o poză mai îngustă. */
+.scene-bg {
+  background-color: #dac6a7;
+  background-image: var(--scene-narrow);
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+}
+@media (min-width: 1024px) {
+  .scene-bg { background-image: var(--scene-wide); }
+}
+
+.oil-lineup {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+.oil-bottle {
+  position: relative;
+  display: block;
+  flex: none;
+  border-radius: 0.5rem;
+  outline: none;
+}
+.oil-bottle-image {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: translate 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
+}
+/* Umbra aruncată: aceeași poză, neagră și estompată, turtită (scaleY) și culcată spre dreapta-spate (skewX).
+   Se stinge spre capăt (mask-image), ca o umbră adevărată. */
+.oil-bottle-cast {
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  transform-origin: 50% 100%;
+  transform: scaleY(0.2) skewX(-48deg);
+  filter: brightness(0) blur(3px);
+  opacity: 0.3;
+  mask-image: linear-gradient(to top, #000 0%, rgb(0 0 0 / 0.25) 55%, transparent 100%);
+  transition: opacity 0.6s ease;
+}
+/* Umbra de contact: o elipsă estompată chiar sub baza sticlei */
+.oil-bottle-contact {
+  position: absolute;
+  z-index: 1;
+  right: -6%;
+  bottom: -1.5%;
+  left: -6%;
+  height: clamp(6px, 9%, 16px);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(48 36 16 / 0.55), rgb(48 36 16 / 0.16) 62%, transparent);
+  transition: opacity 0.6s ease, scale 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.oil-bottle-ambient {
+  position: absolute;
+  z-index: 0;
+  right: -35%;
+  bottom: -5%;
+  left: -35%;
+  height: 16%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(60 44 20 / 0.22), transparent);
+}
+/* Eticheta de pe masă, sub fiecare sticlă: mărimea, iar de la tabletă și prețul */
+.oil-bottle-label {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  left: 50%;
+  translate: -50% 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: #3b3624;
+  text-align: center;
+  white-space: nowrap;
+  transition: color 0.3s ease;
+}
+.oil-bottle-price {
+  display: none;
+  font-weight: 400;
+  color: #6b6450;
+}
+@media (min-width: 768px) {
+  .oil-bottle-label { font-size: 0.8125rem; }
+  .oil-bottle-price { display: block; font-size: 0.75rem; }
+}
+/* Cu mouse-ul: sticla se ridică de pe masă (umbra de sub ea se micșorează), celelalte se sting puțin */
+@media (hover: hover) {
+  .oil-bottle:hover .oil-bottle-image { translate: 0 -12px; }
+  .oil-bottle:hover .oil-bottle-contact { opacity: 0.5; scale: 0.82 1; }
+  .oil-bottle:hover .oil-bottle-cast { opacity: 0.16; }
+  .oil-bottle:hover .oil-bottle-label { color: var(--color-olive); }
+  .oil-lineup:has(.oil-bottle:hover) .oil-bottle:not(:hover) .oil-bottle-image { filter: saturate(0.7) brightness(0.96); }
+}
+/* Cu tastatura (Tab): la fel, plus o subliniere pe etichetă */
+.oil-bottle:focus-visible .oil-bottle-image { translate: 0 -12px; }
+.oil-bottle:focus-visible .oil-bottle-label { color: var(--color-olive); text-decoration: underline; }
+
+/* Adâncimea după mouse (components/hero-parallax.tsx scrie --px și --py, între -1 și 1) */
+.leaves-depth {
+  translate: calc(var(--px, 0) * -18px) calc(var(--py, 0) * -10px);
+  transition: translate 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lineup-depth {
+  translate: calc(var(--px, 0) * 7px) 0;
+  transition: translate 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.leaves-near,
+.leaves-far {
+  transform-origin: 100% 0;
+}
+
+@keyframes pg-place {
+  from { opacity: 0; translate: 0 -40px; }
+}
+@keyframes pg-shadow-in {
+  from { opacity: 0; scale: 0.4 1; }
+}
+@keyframes pg-fade {
+  from { opacity: 0; }
+}
+@keyframes pg-label-in {
+  from { opacity: 0; translate: -50% 8px; }
+}
+@keyframes pg-sway {
+  from { rotate: -1.8deg; }
+  to { rotate: 1.4deg; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Sticlele se așază pe rând (--i = locul în rând), umbrele apar când ating masa, apoi etichetele */
+  .oil-bottle-image { animation: pg-place 1.1s cubic-bezier(0.16, 1, 0.3, 1) calc(0.55s + var(--i) * 0.12s) backwards; }
+  .oil-bottle-contact,
+  .oil-bottle-ambient { animation: pg-shadow-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) calc(0.62s + var(--i) * 0.12s) backwards; }
+  .oil-bottle-cast { animation: pg-fade 1.4s ease calc(0.7s + var(--i) * 0.12s) backwards; }
+  .oil-bottle-label { animation: pg-label-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) calc(1.25s + var(--i) * 0.07s) backwards; }
+  /* Umbra frunzelor apare încet, apoi ramurile se leagănă, fiecare în ritmul ei */
+  .leaves-wall { animation: pg-fade 2.4s ease 0.1s backwards; }
+  .leaves-near { animation: pg-sway 7s ease-in-out infinite alternate; }
+  .leaves-far { animation: pg-sway 11s ease-in-out -5s infinite alternate-reverse; }
 }
 
 /* Tipărirea facturilor: foaie A4, cu margini de 12 mm */

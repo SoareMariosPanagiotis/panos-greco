@@ -1,92 +1,90 @@
+import type { CSSProperties } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { getImageProps } from "next/image";
 import { GreekFlag } from "@/components/greek-flag";
+import { HeroParallax } from "@/components/hero-parallax";
+import { OilLineup } from "@/components/oil-lineup";
+import { OIL_PATH } from "@/components/oil-prices";
+import { Words } from "@/components/words";
+// Pozele le importăm ca pe un fișier de cod, nu le scriem ca text ("/banner/…"). Așa Next.js le pune
+// în adresă o amprentă a conținutului (scena-lata.a1b2c3.jpg): când schimbi poza, se schimbă adresa,
+// iar browserul și serverul nu mai pot arăta varianta veche din memorie.
+import leavesFar from "@/public/banner/frunze-departe.webp";
+import leavesNear from "@/public/banner/frunze-aproape.webp";
+import sceneNarrow from "@/public/banner/scena-ingusta.jpg";
+import sceneWide from "@/public/banner/scena-lata.jpg";
 
-// Bannerul mare din pagina principală: poza cu gama de ulei, iar peste ea titlul și butoanele.
+// Bannerul mare din pagina principală, „vitrina”: aceeași scenă ca în pozele produselor (perete cald,
+// masă de piatră, umbră de măslin), dar construită din straturi, ca să se poată mișca:
 //
-// Două poze, după ecran („art direction”): pe calculator una lată (produsele în dreapta, loc pentru
-// text în stânga), pe telefon una înaltă (produsele jos, textul sus). <picture> lasă browserul să o
-// aleagă pe cea potrivită și o descarcă doar pe aceea. getImageProps îi dă fiecăreia variantele
-// micșorate de next/image, deci telefonul nu descarcă poza de 2400 px.
+//   1. fundalul: peretele și masa, fără produse (o poză lată pe calculator, una îngustă pe telefon);
+//      are toată înălțimea bannerului și stă pe mijloc, deci arată la fel pe 1280 px și pe 2560 px;
+//   2. umbra ramurilor de măslin pe perete: două straturi transparente care se leagănă încet, ca în vânt;
+//   3. cele cinci ambalaje, fiecare separat (OilLineup): se așază pe masă unul după altul; cu mouse-ul,
+//      sticla se ridică, iar un clic deschide pagina uleiului cu mărimea ei deja aleasă;
+//   4. textul, deasupra tuturor. Nu e „lipit” în poză: e HTML, deci îl citește Google și îl schimbi oricând.
 //
-// Textul nu e „lipit” în poză: e HTML. Așa rămâne clar pe orice ecran, îl citește Google
-// și îl poți schimba oricând fără să refaci poza.
-
-const ALT =
-    "Uleiul de măsline extravirgin bio Panos Greco: sticle de 250 ml, 500 ml, 1 l și canistra de 3 l, " +
-    "pe o masă de piatră, în lumina soarelui";
-
-// Culoarea peretelui din poze (măsurată), ca fundalul textului să se „topească” în poză
-const WALL = "#e2caa6";
+// Straturile 2 și 3 se mișcă puțin și după mouse (HeroParallax), fiecare cât de „departe” e.
+// Toate mișcările sunt în globals.css, la „Bannerul de pe prima pagină”.
 
 export function HomeHero() {
-    const common = { alt: ALT, sizes: "100vw" };
-    const {
-        props: { srcSet: wide },
-    } = getImageProps({ ...common, width: 2400, height: 1000, src: "/banner/gama-ulei-lat.jpg" });
-    const {
-        props: { srcSet: tall, ...img },
-    } = getImageProps({
-        ...common,
-        width: 1200,
-        height: 1500,
-        src: "/banner/gama-ulei-vertical.jpg",
-        loading: "eager", // e primul lucru văzut: îl încărcăm imediat (LCP)
-        fetchPriority: "high",
-    });
+    // Fundalul e în CSS (background-image), ca să poată schimba poza după lățimea ecranului (media query).
+    // Îi dăm adresele pozelor prin două variabile CSS.
+    const scene = {
+        "--scene-narrow": `url(${sceneNarrow.src})`,
+        "--scene-wide": `url(${sceneWide.src})`,
+    } as CSSProperties;
 
     return (
-        <section className="relative overflow-hidden" style={{ backgroundColor: WALL }}>
-            <picture>
-                <source media="(min-width: 768px)" srcSet={wide} />
-                {/* eslint-disable-next-line jsx-a11y/alt-text -- alt vine din getImageProps */}
-                <img
-                    {...img}
-                    srcSet={tall}
-                    className="block aspect-[4/5] w-full object-cover object-bottom md:aspect-auto md:h-[440px] md:object-[78%_100%] lg:h-[520px] xl:h-[600px]"
-                />
-            </picture>
-
-            {/* Un văl în culoarea peretelui, dinspre text spre produse: textul se citește oricât de îngust e ecranul */}
+        <HeroParallax
+            className="scene-bg relative isolate h-[660px] overflow-hidden sm:h-[700px] md:h-[780px] lg:h-[560px] xl:h-[620px] 2xl:h-[680px]"
+            style={scene}
+        >
+            {/* Umbra frunzelor: doar pe perete (partea de sus, până la masă), întunecând ce e dedesubt (multiply) */}
             <div
-                className="pointer-events-none absolute inset-0 md:hidden"
-                style={{ background: `linear-gradient(to bottom, ${WALL}f2 0%, ${WALL}cc 32%, ${WALL}00 58%)` }}
-            />
-            <div
-                className="pointer-events-none absolute inset-0 hidden md:block"
-                style={{ background: `linear-gradient(to right, ${WALL}f5 0%, ${WALL}d9 34%, ${WALL}00 58%)` }}
-            />
-
-            <div className="absolute inset-0">
-                <div className="mx-auto flex h-full max-w-6xl items-start px-4 pt-7 sm:px-8 md:items-center md:pt-0">
-                    <div className="max-w-md text-neutral-900 lg:max-w-lg">
-                        <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.18em] text-olive uppercase sm:text-sm">
-                            <GreekFlag className="h-3 w-[18px] shrink-0 sm:h-3.5 sm:w-[21px]" />
-                            Din livada familiei · Messinia, Grecia
-                        </p>
-                        <h1 className="mt-2 text-[1.7rem] leading-tight font-bold text-balance sm:text-4xl lg:text-5xl">
-                            Ulei de măsline extravirgin bio, presat la rece
-                        </h1>
-                        <p className="mt-3 text-[0.95rem] leading-relaxed text-neutral-700 sm:text-lg">
-                            Nefiltrat, din măslinele livezii noastre de lângă Kalamata. Direct de la producător.
-                        </p>
-                        <div className="mt-5 flex flex-wrap gap-3">
-                            <Link
-                                href="/produse/ulei-de-masline-extravirgin-bio"
-                                className="rounded-full bg-olive px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-olive/90 sm:text-base"
-                            >
-                                Descoperă uleiul
-                            </Link>
-                            <Link
-                                href="#produse"
-                                className="rounded-full border border-olive/40 bg-white/60 px-6 py-3 text-sm font-semibold text-olive backdrop-blur transition hover:bg-white sm:text-base"
-                            >
-                                Toate produsele
-                            </Link>
-                        </div>
+                aria-hidden="true"
+                className="leaves-wall pointer-events-none absolute inset-x-0 top-0 h-[72%] overflow-hidden mix-blend-multiply lg:h-[70%]"
+            >
+                <div className="relative mx-auto h-full max-w-6xl">
+                    <div className="leaves-depth absolute -top-[4%] -right-[42%] aspect-[16/11] w-[125%] sm:-right-[24%] sm:w-[92%] md:w-[80%] lg:-top-[14%] lg:-right-[230px] lg:w-[860px] xl:w-[920px] 2xl:-right-[300px] 2xl:w-[1000px]">
+                        <Image src={leavesFar} alt="" fill sizes="(min-width: 1024px) 1000px, 100vw" className="leaves-far" />
+                        <Image src={leavesNear} alt="" fill sizes="(min-width: 1024px) 1000px, 100vw" className="leaves-near" />
                     </div>
                 </div>
             </div>
-        </section>
+
+            <div className="relative mx-auto h-full max-w-6xl px-4 sm:px-8">
+                <div className="relative z-10 max-w-md pt-7 text-neutral-900 sm:pt-10 md:max-w-2xl lg:absolute lg:top-[45%] lg:max-w-[25rem] lg:-translate-y-1/2 lg:pt-0 xl:max-w-md">
+                    <p className="enter flex items-center gap-2 text-sm font-medium text-olive">
+                        <GreekFlag className="h-3 w-[18px] shrink-0 sm:h-3.5 sm:w-[21px]" />
+                        Din livada familiei din Messinia, Grecia
+                    </p>
+                    <h1 className="mt-3 font-serif text-[1.75rem] leading-[1.1] font-semibold text-balance min-[400px]:text-[2rem] sm:text-5xl lg:text-[2.6rem] xl:text-5xl">
+                        <Words text="Ulei de măsline extravirgin bio, presat la rece" delay={150} />
+                    </h1>
+                    {/* Pe telefoanele foarte înguste (sub 360 px) nu mai are loc deasupra sticlelor */}
+                    <p className="enter enter-1 mt-3 text-[0.95rem] leading-relaxed text-neutral-700 max-[359px]:hidden sm:mt-4 sm:text-lg lg:text-base xl:text-lg">
+                        Nefiltrat, din măslinele livezii noastre de lângă Kalamata. Direct de la producător.
+                    </p>
+                    <div className="enter enter-2 mt-4 flex flex-wrap gap-3 sm:mt-6">
+                        <Link
+                            href={OIL_PATH}
+                            className="btn-sheen rounded-full bg-olive px-5 py-3 text-sm font-semibold text-white shadow-sm transition duration-300 min-[400px]:px-6 hover:-translate-y-0.5 hover:shadow-lg sm:text-base"
+                        >
+                            Descoperă uleiul
+                        </Link>
+                        <Link
+                            href="#produse"
+                            className="rounded-full border border-olive/40 bg-white/60 px-5 py-3 text-sm font-semibold text-olive backdrop-blur transition duration-300 min-[400px]:px-6 hover:-translate-y-0.5 hover:bg-white sm:text-base"
+                        >
+                            Toate produsele
+                        </Link>
+                    </div>
+                </div>
+
+                {/* Sticlele stau pe masă: baza lor e la 90–93% din înălțime, sub linia unde se termină peretele (70–72%) */}
+                <OilLineup className="lineup-depth absolute inset-x-0 bottom-[7%] mx-auto w-[min(92%,30rem)] md:w-[34rem] lg:inset-x-auto lg:right-8 lg:bottom-[10%] lg:w-[560px] xl:w-[640px] 2xl:-right-6 2xl:w-[720px]" />
+            </div>
+        </HeroParallax>
     );
 }

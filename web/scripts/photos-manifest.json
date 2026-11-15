@@ -6,11 +6,11 @@
       "photos": [
         {
           "file": "Site - poze premium/Ulei de măsline extravirgin bio/5 - toată gama.jpg",
-          "alt": "Uleiul de măsline extravirgin bio Panos Greco: 250 ml, 500 ml, 1 l și 3 l"
+          "alt": "Uleiul de măsline extravirgin bio Panos Greco: 250 ml, 500 ml, 1 l, 3 l și 5 l"
         },
         {
           "file": "Site - poze premium/Ulei de măsline extravirgin bio/7 - mărimi.jpg",
-          "alt": "Uleiul Panos Greco în patru mărimi: 250 ml, 500 ml, 1 l și 3 l"
+          "alt": "Uleiul Panos Greco în cinci mărimi: 250 ml, 500 ml, 1 l, 3 l și 5 l"
         },
         {
           "file": "Site - poze premium/Ulei de măsline extravirgin bio/avantaje - 250 ml.jpg",
@@ -71,6 +71,21 @@
           "file": "Site - poze produse/Ulei de măsline extravirgin bio/4 - 3 l.jpg",
           "size": "3 l",
           "alt": "Ulei de măsline extravirgin bio Panos Greco, canistră de 3 l, pe fundal alb: eticheta de aproape"
+        },
+        {
+          "file": "Site - poze premium/Ulei de măsline extravirgin bio/avantaje - 5 l.jpg",
+          "size": "5 l",
+          "alt": "Ulei de măsline extravirgin bio Panos Greco, canistră de 5 l: presat la rece, bio certificat, nefiltrat, din Messinia"
+        },
+        {
+          "file": "Site - poze premium/Ulei de măsline extravirgin bio/8 - 5 l.jpg",
+          "size": "5 l",
+          "alt": "Ulei de măsline extravirgin bio Panos Greco, canistră de 5 l, pe o masă de piatră"
+        },
+        {
+          "file": "Site - poze produse/Ulei de măsline extravirgin bio/6 - 5 l.jpg",
+          "size": "5 l",
+          "alt": "Ulei de măsline extravirgin bio Panos Greco, canistră de 5 l, pe fundal alb: eticheta de aproape"
         }
       ]
     },

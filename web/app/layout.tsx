@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Lora } from "next/font/google";
 import { CartProvider } from "@/components/cart-provider";
 import { SiteFooter, SiteFooterFallback } from "@/components/site-footer";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
@@ -17,6 +17,13 @@ const geistMono = Geist_Mono({
     subsets: ["latin"],
 });
 
+// Litera cu serife a titlurilor (font-serif), aceeași ca pe pozele cu avantajele uleiului.
+// latin-ext: acolo sunt ă, â, î, ș, ț.
+const lora = Lora({
+    variable: "--font-lora",
+    subsets: ["latin", "latin-ext"],
+});
+
 export const metadata: Metadata = {
     title: "Panos Greco",
     description: "Ulei de măsline extravirgin bio, din livada proprie.",
@@ -30,7 +37,7 @@ export default function RootLayout({
     return (
         <html
             lang="ro"
-            className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+            className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} h-full antialiased`}
         >
         <body className="flex min-h-full flex-col bg-olive-light pb-16 font-sans md:pb-0">
         <CartProvider>

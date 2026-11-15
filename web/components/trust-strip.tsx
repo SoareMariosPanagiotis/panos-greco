@@ -62,7 +62,7 @@ export function TrustStrip() {
     return (
         <section aria-label="Pe scurt despre noi" className="border-b bg-white">
             {/* Pe calculator: linii subțiri între coloane (divide-x) și spațiu egal de o parte și de alta */}
-            <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-x-3 gap-y-6 px-4 py-6 sm:px-8 md:grid-cols-4 md:gap-x-0 md:divide-x md:[&>li]:px-4 xl:[&>li]:px-6 xl:[&>li:first-child]:pl-0 xl:[&>li:last-child]:pr-0">
+            <ul className="enter enter-4 mx-auto grid max-w-6xl grid-cols-2 gap-x-3 gap-y-6 px-4 py-6 sm:px-8 md:grid-cols-4 md:gap-x-0 md:divide-x md:[&>li]:px-4 xl:[&>li]:px-6 xl:[&>li:first-child]:pl-0 xl:[&>li:last-child]:pr-0">
                 <li>
                     <Link href={ORGANIC_CERTIFICATE_PATH} className={`group ${item}`}>
                         <Image

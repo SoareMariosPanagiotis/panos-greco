@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useSearchParams } from "next/navigation";
 import { ProductGallery } from "@/components/product-gallery";
 import { VariantPicker } from "@/components/variant-picker";
-import type { Variant } from "@/lib/catalog";
+import { sizeSlug, type Variant } from "@/lib/catalog";
 import type { ProductImage } from "@/lib/product-images";
 
 type Props = {
@@ -30,7 +31,11 @@ function photosFor(images: ProductImage[], variantId: string | undefined) {
 // Mărimea aleasă stă aici, deasupra amândurora („lifting state up”, în React):
 // butoanele o schimbă, iar galeria arată pozele ei.
 export function ProductShowcase({ images, variants, productName, productSlug, children, after }: Props) {
-    const [variantId, setVariantId] = useState(variants[0]?.id);
+    // Mărimea poate veni din adresă: /produse/ulei-de-masline-extravirgin-bio?marime=1-l (de ex. din bannerul
+    // cu sticle). Ce apasă apoi clientul are întâietate; fără nimic în adresă, e aleasă prima mărime.
+    const fromAddress = useSearchParams().get("marime");
+    const [pickedId, setVariantId] = useState<string>();
+    const variantId = pickedId ?? variants.find((variant) => sizeSlug(variant.packSize, variant.packUnit) === fromAddress)?.id ?? variants[0]?.id;
 
     return (
         <div className="mt-4 grid gap-6 sm:mt-6 md:grid-cols-2 md:gap-10">
