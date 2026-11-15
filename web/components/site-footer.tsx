@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ORGANIC_CERTIFICATE_PATH } from "@/lib/organic-certificate";
-import { getShopInfo, phoneHref, type ShopInfo } from "@/lib/shop-info";
+import { SocialLinks } from "@/components/social-links";
+import { getShopInfo, mapsHref, phoneHref, type ShopInfo } from "@/lib/shop-info";
 import { RETURN_FORM_LABEL, RETURN_FORM_PATH } from "@/lib/withdrawals";
 
 // Subsolul, pe fiecare pagină. Aici stau lucrurile cerute de lege:
@@ -51,6 +52,7 @@ function FooterLayout({ shop }: { shop: ShopInfo | null }) {
                     <p className="mt-4 max-w-xs text-sm text-white/80">
                         Ulei de măsline extravirgin bio, din livada proprie.
                     </p>
+                    {shop && <SocialLinks shop={shop} className="mt-5 text-white" />}
                 </div>
 
                 <nav aria-label="Retur">
@@ -100,7 +102,19 @@ function FooterLayout({ shop }: { shop: ShopInfo | null }) {
                                 </a>
                             </li>
                         )}
-                        {shop?.shopAddress && <li className="text-white/80">{shop.shopAddress}</li>}
+                        {/* Adresa duce la magazin pe Google Maps (într-un tab nou) */}
+                        {shop?.shopAddress && (
+                            <li>
+                                <a
+                                    href={mapsHref(shop) ?? undefined}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-white/80 hover:text-white hover:underline"
+                                >
+                                    {shop.shopAddress}
+                                </a>
+                            </li>
+                        )}
                         {shop?.openingHours && <li className="text-white/80">{shop.openingHours}</li>}
                     </ul>
                 </div>

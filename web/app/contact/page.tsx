@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { legalLink } from "@/components/legal/legal-page";
-import { getShopInfo, phoneHref } from "@/lib/shop-info";
+import { SocialLinks } from "@/components/social-links";
+import { getShopInfo, mapsHref, phoneHref } from "@/lib/shop-info";
 import { RETURN_FORM_LABEL, RETURN_FORM_PATH } from "@/lib/withdrawals";
 
 export const metadata: Metadata = {
@@ -42,8 +43,21 @@ async function ContactDetails() {
                             </a>
                         </Row>
                     )}
-                    {shop.shopAddress && <Row label="Magazinul">{shop.shopAddress}</Row>}
+                    {shop.shopAddress && (
+                        <Row label="Magazinul">
+                            {shop.shopAddress}
+                            <br />
+                            <a href={mapsHref(shop) ?? undefined} target="_blank" rel="noopener noreferrer" className={legalLink}>
+                                Vezi pe Google Maps
+                            </a>
+                        </Row>
+                    )}
                     {shop.openingHours && <Row label="Program">{shop.openingHours}</Row>}
+                    {(shop.facebookUrl || shop.instagramUrl) && (
+                        <Row label="Ne găsești și pe">
+                            <SocialLinks shop={shop} className="text-olive" />
+                        </Row>
+                    )}
                 </dl>
             </section>
 

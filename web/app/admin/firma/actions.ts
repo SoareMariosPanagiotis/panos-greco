@@ -15,6 +15,9 @@ export type ShopInfoValues = {
     openingHours: string;
     email: string;
     phone: string;
+    facebookUrl: string;
+    instagramUrl: string;
+    mapsUrl: string;
 };
 
 export type ShopInfoState = {
@@ -24,6 +27,10 @@ export type ShopInfoState = {
 };
 
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+// Aceleași adrese acceptate ca în baza de date (migrația 036): doar https, doar de pe aceste site-uri
+const FACEBOOK = /^https:\/\/(www\.|m\.)?(facebook|fb)\.com\//;
+const INSTAGRAM = /^https:\/\/(www\.)?instagram\.com\//;
+const MAPS = /^https:\/\/((www\.)?google\.[a-z]{2,3}(\.[a-z]{2})?\/maps|maps\.google\.[a-z]{2,3}(\.[a-z]{2})?\/|maps\.app\.goo\.gl\/|goo\.gl\/maps\/)/;
 
 function readValues(formData: FormData): ShopInfoValues {
     const text = (name: string) => String(formData.get(name) ?? "").trim();
@@ -36,6 +43,9 @@ function readValues(formData: FormData): ShopInfoValues {
         openingHours: text("openingHours"),
         email: text("email").toLowerCase(),
         phone: text("phone").replace(/\s+/g, " "),
+        facebookUrl: text("facebookUrl"),
+        instagramUrl: text("instagramUrl"),
+        mapsUrl: text("mapsUrl"),
     };
 }
 
@@ -50,6 +60,15 @@ function validate(values: ShopInfoValues) {
     if (values.openingHours.length > 200) return "Programul e prea lung (cel mult 200 de caractere).";
     if (!EMAIL.test(values.email)) return "Scrie o adresă de email validă.";
     if (values.phone && !/^\+?[0-9 ]{9,16}$/.test(values.phone)) return "Telefonul are doar cifre, ex: 0740 123 456.";
+    if (values.facebookUrl && (!FACEBOOK.test(values.facebookUrl) || values.facebookUrl.length > 300)) {
+        return "Linkul de Facebook trebuie să înceapă cu https://www.facebook.com/";
+    }
+    if (values.instagramUrl && (!INSTAGRAM.test(values.instagramUrl) || values.instagramUrl.length > 300)) {
+        return "Linkul de Instagram trebuie să înceapă cu https://www.instagram.com/";
+    }
+    if (values.mapsUrl && (!MAPS.test(values.mapsUrl) || values.mapsUrl.length > 500)) {
+        return "Linkul de Google Maps trebuie să fie de la Google Maps (de ex. https://maps.app.goo.gl/…).";
+    }
     return null;
 }
 
@@ -78,6 +97,9 @@ export async function updateShopInfo(_previous: ShopInfoState, formData: FormDat
         openingHours: values.openingHours || null,
         email: values.email,
         phone: values.phone || null,
+        facebookUrl: values.facebookUrl || null,
+        instagramUrl: values.instagramUrl || null,
+        mapsUrl: values.mapsUrl || null,
     };
 
     try {

@@ -37,6 +37,26 @@ const FIELDS: Field[] = [
     { name: "openingHours", label: "Programul magazinului", placeholder: "Luni–Vineri 9–18, Sâmbătă 9–14", wide: true },
     { name: "email", label: "Email de contact", type: "email" },
     { name: "phone", label: "Telefon", placeholder: "0740 123 456", type: "tel" },
+    {
+        name: "mapsUrl",
+        label: "Magazinul pe Google Maps",
+        placeholder: "https://maps.app.goo.gl/…",
+        hint: "În Google Maps caută magazinul, apasă „Distribuie” și copiază linkul. Gol: linkul caută adresa magazinului.",
+        type: "url",
+        wide: true,
+    },
+    {
+        name: "facebookUrl",
+        label: "Pagina de Facebook",
+        placeholder: "https://www.facebook.com/…",
+        type: "url",
+    },
+    {
+        name: "instagramUrl",
+        label: "Contul de Instagram",
+        placeholder: "https://www.instagram.com/…",
+        type: "url",
+    },
 ];
 
 export function ShopInfoForm({ info }: { info: ShopInfo }) {
@@ -52,6 +72,9 @@ export function ShopInfoForm({ info }: { info: ShopInfo }) {
         openingHours: info.openingHours ?? "",
         email: info.email,
         phone: info.phone ?? "",
+        facebookUrl: info.facebookUrl ?? "",
+        instagramUrl: info.instagramUrl ?? "",
+        mapsUrl: info.mapsUrl ?? "",
     };
 
     return (

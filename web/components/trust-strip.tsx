@@ -5,6 +5,7 @@ import { ChevronRight, Store, Truck } from "lucide-react";
 import { getDeliveryHints, type DeliveryHints } from "@/app/cos/actions";
 import { GreekFlag } from "@/components/greek-flag";
 import { formatPrice } from "@/lib/catalog";
+import { getShopInfo, mapsHref } from "@/lib/shop-info";
 import { ORGANIC_CERTIFICATE as cert, ORGANIC_CERTIFICATE_PATH } from "@/lib/organic-certificate";
 
 // Banda de sub banner: patru motive să cumperi de la noi, citite dintr-o privire, ca la magazinele mari.
@@ -20,8 +21,9 @@ const visual = "flex h-9 w-[54px] shrink-0 items-center justify-center";
 const title = "block text-sm font-semibold text-neutral-900";
 const sub = "block text-xs leading-snug text-neutral-600";
 
-// hints = null cât se încarcă: rândul al doilea e gol, dar își păstrează locul, ca pagina să nu sară
-function DeliveryItems({ hints }: { hints: DeliveryHints | null }) {
+// hints = null cât se încarcă: rândul al doilea e gol, dar își păstrează locul, ca pagina să nu sară.
+// maps = linkul spre magazin pe Google Maps (din „Datele firmei”); cu el, „Magazin în Galați” se poate apăsa.
+function DeliveryItems({ hints, maps = null }: { hints: DeliveryHints | null; maps?: string | null }) {
     const free = hints?.freeShipping;
     const pickup = hints?.alwaysFree.some((name) => /ridic/i.test(name)) ?? false;
     const placeholder = <span className={`${sub} invisible`}>…</span>;
@@ -41,21 +43,41 @@ function DeliveryItems({ hints }: { hints: DeliveryHints | null }) {
                     )}
                 </span>
             </li>
-            <li className={item}>
-                <span className={visual}>
-                    <Store className="size-6 text-olive" />
-                </span>
-                <span>
-                    <span className={title}>Magazin în Galați</span>
-                    {hints ? pickup && <span className={sub}>ridicare gratuită</span> : placeholder}
-                </span>
-            </li>
+            {maps ? (
+                <li>
+                    {/* Harta se deschide într-un tab nou, ca clientul să nu plece din magazin */}
+                    <a href={maps} target="_blank" rel="noopener noreferrer" className={`group ${item}`}>
+                        <span className={visual}>
+                            <Store className="size-6 text-olive" />
+                        </span>
+                        <span>
+                            <span className={`${title} group-hover:text-olive`}>
+                                Magazin în Galați
+                                <ChevronRight className="ml-0.5 inline size-3.5 align-[-2px] transition-transform group-hover:translate-x-0.5" />
+                            </span>
+                            <span className={sub}>{pickup ? "ridicare gratuită · vezi pe hartă" : "vezi pe hartă"}</span>
+                        </span>
+                    </a>
+                </li>
+            ) : (
+                <li className={item}>
+                    <span className={visual}>
+                        <Store className="size-6 text-olive" />
+                    </span>
+                    <span>
+                        <span className={title}>Magazin în Galați</span>
+                        {hints ? pickup && <span className={sub}>ridicare gratuită</span> : placeholder}
+                    </span>
+                </li>
+            )}
         </>
     );
 }
 
+// Livrarea și datele magazinului, cerute în paralel
 async function LiveDeliveryItems() {
-    return <DeliveryItems hints={await getDeliveryHints()} />;
+    const [hints, shop] = await Promise.all([getDeliveryHints(), getShopInfo()]);
+    return <DeliveryItems hints={hints} maps={mapsHref(shop)} />;
 }
 
 export function TrustStrip() {
